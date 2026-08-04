@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { ArtworkCanvas } from "@/components/ArtworkCanvas";
+import { ImageSlider } from "@/components/ImageSlider";
 import { fetchArtworkById, type Artwork } from "@/lib/artworks";
 
 export const Route = createFileRoute("/artwork/$id")({
@@ -44,20 +44,34 @@ function ArtworkDetail() {
 
   if (!art) return null;
 
+  // Normalise: always work from the images array; fall back to single image
+  const allImages: string[] =
+    art.images && art.images.length > 0
+      ? art.images
+      : art.image
+      ? [art.image]
+      : [];
+
   return (
     <div className="min-h-screen">
       <Navbar />
       <main className="pt-24 pb-20">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-          <div className="aspect-square bg-card border border-border/40 vignette">
-            <ArtworkCanvas image={art.image} hovered />
+
+          {/* Image slider */}
+          <div className="aspect-square">
+            <ImageSlider images={allImages} title={art.title} />
           </div>
+
           <div className="flex flex-col justify-center">
             <Link to="/gallery" className="text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-foreground mb-8">
               ← Back to gallery
             </Link>
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
               {art.medium} · {art.year}
+              {allImages.length > 1 && (
+                <span className="ml-3 opacity-50">· {allImages.length} views</span>
+              )}
             </p>
             <h1 className="text-display text-6xl md:text-7xl leading-none mb-8">{art.title}</h1>
             <div className="ink-divider mb-8" />

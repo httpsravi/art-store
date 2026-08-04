@@ -33,7 +33,7 @@ const artworkSchema = z.object({
   year: z.coerce.number().int().min(1900).max(2100),
   dimensions: z.string().trim().min(1).max(60),
   price: z.coerce.number().min(0).max(1_000_000),
-  image: z.string().min(1, "Upload an image"),
+  image: z.string().optional(), // validated manually via imageFiles state
   description: z.string().trim().min(1).max(800),
 });
 
@@ -46,8 +46,8 @@ function Admin() {
   const [activeTab, setActiveTab] = useState<"works" | "inquiries" | "settings">("works");
   const [inquiryFilter, setInquiryFilter] = useState<"all" | "unread" | "read">("all");
   
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -94,12 +94,21 @@ function Admin() {
   }
 
   function onImage(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(String(reader.result));
-    reader.readAsDataURL(file);
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setImageFiles(files);
+    // Generate data-URL previews for all selected files
+    const previews: string[] = [];
+    files.forEach((file, i) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        previews[i] = String(reader.result);
+        if (previews.filter(Boolean).length === files.length) {
+          setImagePreviews([...previews]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -108,13 +117,20 @@ function Admin() {
     setIsSubmitting(true);
 
     const fd = new FormData(e.currentTarget);
+
+    // Validate that at least one image has been selected
+    if (imageFiles.length === 0) {
+      setErrors({ image: "Please select at least one image" });
+      setIsSubmitting(false);
+      return;
+    }
+
     const data = {
       title: String(fd.get("title") ?? ""),
       medium: String(fd.get("medium") ?? "") as Medium,
       year: fd.get("year"),
       dimensions: String(fd.get("dimensions") ?? ""),
       price: fd.get("price"),
-      image: imageFile ? "has-image" : "",
       description: String(fd.get("description") ?? ""),
     };
 
@@ -135,15 +151,14 @@ function Admin() {
     formData.append("dimensions", result.data.dimensions);
     formData.append("price", String(result.data.price));
     formData.append("description", result.data.description);
-    if (imageFile) {
-      formData.append("image", imageFile);
-    }
+    // Append every selected image under the multi-upload key
+    imageFiles.forEach((file) => formData.append("images[]", file));
 
     try {
       const newWork = await createArtwork(formData, token);
       setWorks([newWork, ...works]);
-      setImagePreview("");
-      setImageFile(null);
+      setImagePreviews([]);
+      setImageFiles([]);
       (e.target as HTMLFormElement).reset();
       alert("Artwork published successfully!");
     } catch (err: any) {
@@ -259,9 +274,7 @@ function Admin() {
             <button className="w-full px-6 py-3 bg-primary text-primary-foreground text-xs uppercase tracking-[0.25em]">
               Enter
             </button>
-            <p className="text-xs text-muted-foreground pt-4">
-              Demo passphrase: <code className="text-foreground">ravitej</code>. Connects to Express backend authentication.
-            </p>
+
           </form>
         </main>
         <Footer />
@@ -351,15 +364,46 @@ function Admin() {
                 </div>
                 <AdminField label='Dimensions (e.g. 24" × 30")' name="dimensions" error={errors.dimensions} />
                 <div>
-                  <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block">Image</label>
+                  <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block">
+                    Images <span className="normal-case opacity-60">(select multiple)</span>
+                  </label>
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={onImage}
                     className="w-full text-xs file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-foreground file:text-background file:uppercase file:tracking-widest file:text-[10px] file:cursor-pointer"
                   />
-                  {imagePreview && (
-                    <img src={imagePreview} alt="preview" className="mt-3 w-full aspect-square object-cover border border-border" />
+                  {/* Preview grid */}
+                  {imagePreviews.length > 0 && (
+                    <div className={`mt-3 grid gap-2 ${
+                      imagePreviews.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                    }`}>
+                      {imagePreviews.map((src, i) => (
+                        <div key={i} className="relative group">
+                          <img
+                            src={src}
+                            alt={`preview ${i + 1}`}
+                            className="w-full aspect-square object-cover border border-border"
+                          />
+                          <span className="absolute top-1 left-1 text-[9px] uppercase tracking-widest bg-background/80 px-1.5 py-0.5 text-muted-foreground">
+                            {i + 1}/{imagePreviews.length}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newFiles = imageFiles.filter((_, fi) => fi !== i);
+                              const newPreviews = imagePreviews.filter((_, pi) => pi !== i);
+                              setImageFiles(newFiles);
+                              setImagePreviews(newPreviews);
+                            }}
+                            className="absolute top-1 right-1 w-5 h-5 bg-background/80 text-foreground text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                   {errors.image && <p className="mt-2 text-xs text-destructive">{errors.image}</p>}
                 </div>
