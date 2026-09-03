@@ -11,7 +11,7 @@ export const MEDIUMS: { id: Medium | "all"; label: string }[] = [
 export const DEFAULT_ARTWORKS: Artwork[] = [
   {
     id: "1",
-    title: "Whispers in Graphite",
+    title: "Whispers ",
     medium: "charcoal",
     year: 2025,
     dimensions: "24 × 36 in",
@@ -94,7 +94,7 @@ async function getArtworksAsync(medium?: string, token?: string): Promise<Artwor
           if (item.image && item.image.startsWith("[")) {
             try {
               parsedImages = JSON.parse(item.image);
-            } catch (e) {}
+            } catch (e) { }
           }
           return {
             id: String(item.id),
@@ -165,7 +165,7 @@ async function getArtworkByIdAsync(id: string): Promise<Artwork | null> {
         if (data.image && data.image.startsWith("[")) {
           try {
             parsedImages = JSON.parse(data.image);
-          } catch (e) {}
+          } catch (e) { }
         }
         return {
           id: String(data.id),
