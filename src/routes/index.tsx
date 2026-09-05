@@ -2,10 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { MEDIUMS, fetchArtworks } from "@/services";
-import { type Artwork } from "@/types/artwork";
-import { PLACEHOLDER_WORKS } from "@/constants/placeholders";
+import { MEDIUMS } from "@/services";
 import { ArtworkCard } from "@/components/common/ArtworkCard";
+import { useArtworksQuery } from "@/hooks/useArtworks";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -34,9 +33,8 @@ const MEDIUM_META: Record<string, { index: string; tag: string; description: str
 };
 
 function Home() {
-  const [works, setWorks] = useState<Artwork[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const { data: works = [], isLoading, error: queryError, refetch } = useArtworksQuery();
+  const fetchError = queryError ? queryError.message : null;
 
   const heroRef = useRef<HTMLDivElement>(null);
   const heroPillsRef = useRef<HTMLDivElement>(null);
@@ -53,31 +51,6 @@ function Home() {
 
   const featuredWorksRef = useRef<HTMLDivElement>(null);
   const commissionCtaRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    setIsLoading(true);
-    setFetchError(null);
-
-    fetchArtworks()
-      .then((data) => {
-        if (mounted) {
-          setWorks(data);
-          setIsLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (mounted) {
-          console.error("Failed to load artworks for Home:", err);
-          setFetchError(err.message || "Failed to load artworks");
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   // Coordinated CRAZY GSAP Hero Entrance Timeline & ScrollTriggers
   useEffect(() => {
@@ -831,19 +804,7 @@ function Home() {
               // ERROR FETCHING ARTWORKS: {fetchError}
             </p>
             <button
-              onClick={() => {
-                setIsLoading(true);
-                setFetchError(null);
-                fetchArtworks()
-                  .then((data) => {
-                    setWorks(data);
-                    setIsLoading(false);
-                  })
-                  .catch((err) => {
-                    setFetchError(err.message || "Failed to load artworks");
-                    setIsLoading(false);
-                  });
-              }}
+              onClick={() => refetch()}
               className="cyber-btn"
               style={{ display: "inline-flex" }}
             >

@@ -80,9 +80,6 @@ export const DEFAULT_ARTWORKS: Artwork[] = [
 
 const ARTWORKS_STORAGE_KEY = "ravi_artworks_v1";
 
-/**
- * Normalizes an image string or storage path into a fully qualified browser URL.
- */
 export function resolveImageUrl(imgStr: string): string {
   if (!imgStr) return "https://images.unsplash.com/photo-1578301978693-85fa9fd0c121?w=600&q=80";
 
@@ -91,13 +88,12 @@ export function resolveImageUrl(imgStr: string): string {
     return imgStr;
   }
 
-  // If it's a Supabase storage path or relative path
-  if (isCloudConfigured && supabase) {
+  // If it's a Supabase storage path or relative path, form public URL instantly
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (supabaseUrl && supabaseUrl !== "PLACEHOLDER") {
     const cleanPath = imgStr.startsWith("artworks/") ? imgStr.replace(/^artworks\//, "") : imgStr;
-    const { data } = supabase.storage.from("artworks").getPublicUrl(cleanPath);
-    if (data?.publicUrl) {
-      return data.publicUrl;
-    }
+    const baseUrl = supabaseUrl.endsWith("/") ? supabaseUrl.slice(0, -1) : supabaseUrl;
+    return `${baseUrl}/storage/v1/object/public/artworks/${cleanPath}`;
   }
 
   return imgStr;

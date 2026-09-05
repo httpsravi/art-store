@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { z } from "zod";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { MEDIUMS, fetchArtworks } from "@/services";
-import { type Artwork } from "@/types/artwork";
-import { PLACEHOLDER_WORKS } from "@/constants/placeholders";
+import { MEDIUMS } from "@/services";
 import { ArtworkCard } from "@/components/common/ArtworkCard";
+import { useArtworksQuery } from "@/hooks/useArtworks";
 import { gsap } from "gsap";
 
 const searchSchema = z.object({
@@ -30,39 +29,13 @@ export const Route = createFileRoute("/gallery")({
 
 function Gallery() {
   const { medium = "all" } = Route.useSearch();
-  const [works, setWorks] = useState<Artwork[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const { data: works = [], isLoading, error: queryError, refetch } = useArtworksQuery(medium);
+  const fetchError = queryError ? queryError.message : null;
   const [activeHover, setActiveHover] = useState<string | null>(null);
 
   const headerRef = useRef<HTMLDivElement>(null);
   const filterStripRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    setIsLoading(true);
-    setFetchError(null);
-
-    fetchArtworks(medium as "all" | "charcoal" | "paintings" | "sketches" | undefined)
-      .then((data) => {
-        if (mounted) {
-          setWorks(data);
-          setIsLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (mounted) {
-          console.error("Failed to load gallery artworks:", err);
-          setFetchError(err.message || "Failed to load artworks");
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [medium]);
 
   // Gallery Header GSAP Entrance
   useEffect(() => {
@@ -396,19 +369,7 @@ function Gallery() {
                 // ERROR LOADING GALLERY: {fetchError}
               </p>
               <button
-                onClick={() => {
-                  setIsLoading(true);
-                  setFetchError(null);
-                  fetchArtworks(medium as any)
-                    .then((data) => {
-                      setWorks(data);
-                      setIsLoading(false);
-                    })
-                    .catch((err) => {
-                      setFetchError(err.message || "Failed to load artworks");
-                      setIsLoading(false);
-                    });
-                }}
+                onClick={() => refetch()}
                 className="cyber-btn"
                 style={{ display: "inline-flex" }}
               >

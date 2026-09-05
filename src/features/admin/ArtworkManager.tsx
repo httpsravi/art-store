@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { z } from "zod";
 import { type Artwork, type Medium } from "@/types/artwork";
-import { createArtwork, deleteArtwork } from "@/services";
+import { useCreateArtworkMutation, useDeleteArtworkMutation } from "@/hooks/useArtworks";
+import { AdminField } from "@/features/admin/components/AdminField";
 
 const artworkSchema = z.object({
   title: z.string().trim().min(1).max(120),
@@ -12,8 +13,6 @@ const artworkSchema = z.object({
   image: z.string().optional(), // validated manually via imageFiles state
   description: z.string().trim().min(1).max(800),
 });
-
-import { AdminField } from "@/features/admin/components/AdminField";
 
 export function ArtworkManager({
   works,
@@ -26,6 +25,9 @@ export function ArtworkManager({
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const createMutation = useCreateArtworkMutation();
+  const deleteMutation = useDeleteArtworkMutation();
 
   function onImage(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -87,8 +89,7 @@ export function ArtworkManager({
     imageFiles.forEach((file) => formData.append("images[]", file));
 
     try {
-      const newWork = await createArtwork(formData, token);
-      // Refresh artwork list with latest data from service
+      const newWork = await createMutation.mutateAsync({ formData, token });
       setWorks([newWork, ...works.filter((w) => w.id !== newWork.id)]);
       setImagePreviews([]);
       setImageFiles([]);
@@ -106,7 +107,7 @@ export function ArtworkManager({
     if (!confirm("Delete this work?")) return;
     const token = sessionStorage.getItem("ravitej.token") || "";
     try {
-      await deleteArtwork(id, token);
+      await deleteMutation.mutateAsync({ id, token });
       setWorks(works.filter((w) => w.id !== id));
     } catch (err: any) {
       console.error("Delete artwork error:", err);

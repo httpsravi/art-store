@@ -177,6 +177,13 @@
     box-shadow: 6px 6px 0px #0B0C10;
   }
 
+  .navbar {
+    background: rgba(11, 12, 16, 0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 2px solid #E6B800;
+    color: #FFFFFF; /* ensure text defaults to white */
+  }
+
   /* ── DIVIDERS ── */
   .cyber-divider {
     height: 2px;

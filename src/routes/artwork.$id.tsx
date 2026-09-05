@@ -1,10 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ImageSlider } from "@/components/common/ImageSlider";
-import { type Artwork } from "@/types/artwork";
-import { fetchArtworkById } from "@/services";
+import { useArtworkDetailQuery } from "@/hooks/useArtworks";
 
 export const Route = createFileRoute("/artwork/$id")({
   component: ArtworkDetail,
@@ -22,28 +20,19 @@ export const Route = createFileRoute("/artwork/$id")({
 
 function ArtworkDetail() {
   const { id } = Route.useParams();
-  const [art, setArt] = useState<Artwork | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const { data: art, isLoading, isFetched } = useArtworkDetailQuery(id);
 
-  useEffect(() => {
-    setLoaded(false);
-    fetchArtworkById(id)
-      .then((found) => {
-        setArt(found);
-        setLoaded(true);
-      })
-      .catch((err) => {
-        console.error(err);
-        setArt(null);
-        setLoaded(true);
-      });
-  }, [id]);
-
-  if (loaded && !art) {
+  if (isFetched && !art && !isLoading) {
     throw notFound();
   }
 
-  if (!art) return null;
+  if (isLoading || !art) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <p className="font-mono text-xs uppercase tracking-widest">// LOADING DOSSIER DATA...</p>
+      </div>
+    );
+  }
 
   // Normalise: always work from the images array; fall back to single image
   const allImages: string[] =
