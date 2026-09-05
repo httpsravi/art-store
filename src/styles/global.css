@@ -232,13 +232,14 @@
     gap: 6px;
     font-family: var(--font-mono);
     font-size: 9px;
-    letterSpacing: 0.2em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    padding: 4px 10px;
-    border: 1px solid #00B04F;
-    color: #00B04F;
-    background: rgba(0, 176, 79, 0.08);
+    padding: 3px 8px;
+    border: 1px solid #00E676;
+    color: #00E676;
+    background: rgba(0, 230, 118, 0.15);
     font-weight: 700;
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
   }
 
   .status-badge::before {

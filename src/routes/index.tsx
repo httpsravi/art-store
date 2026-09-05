@@ -349,41 +349,7 @@ function Home() {
           />
         </div>
 
-        {/* HUD Telemetry Labels */}
-        <div
-          ref={heroHudRef}
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: "100px",
-            right: "20px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "6px",
-            alignItems: "flex-end",
-            pointerEvents: "none",
-            zIndex: 2,
-          }}
-        >
-          {["SYS//RAVI.DAVINCI", "WHITE_EDITION_2049", "ONLINE // 100%"].map((label) => (
-            <span
-              key={label}
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                fontWeight: 800,
-                letterSpacing: "0.2em",
-                color: "#4A4D58",
-                textTransform: "uppercase",
-                background: "#FFFFFF",
-                padding: "2px 8px",
-                border: "1px solid rgba(11,12,16,0.12)",
-              }}
-            >
-              {label}
-            </span>
-          ))}
-        </div>
+
 
         {/* Main Hero Container */}
         <div

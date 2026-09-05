@@ -172,29 +172,25 @@ export function Navbar() {
       <header
         ref={headerRef}
         id="navbar"
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         style={{
-          background: scrolled
-            ? "rgba(255, 255, 255, 0.95)"
-            : "linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 100%)",
-          backdropFilter: scrolled ? "blur(16px)" : "none",
-          borderBottom: scrolled ? "2px solid #0B0C10" : "none",
-          boxShadow: scrolled ? "0 10px 30px rgba(0,0,0,0.06)" : "none",
+          background: "rgba(11, 12, 16, 0.95)",
+          backdropFilter: "blur(16px)",
+          borderBottom: "2px solid #E6B800",
+          boxShadow: scrolled ? "0 10px 30px rgba(0,0,0,0.5)" : "0 4px 20px rgba(0,0,0,0.3)",
         }}
       >
-        {/* Yellow progress line at top when scrolled */}
-        {scrolled && (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "3px",
-              background: "linear-gradient(90deg, #E6B800, #00B8D4, #FF0055)",
-            }}
-          />
-        )}
+        {/* Neon accent line at top */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "3px",
+            background: "linear-gradient(90deg, #E6B800, #00B8D4, #FF0055)",
+          }}
+        />
 
         <nav className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 h-16 flex items-center justify-between">
           {/* Logo */}
@@ -215,7 +211,7 @@ export function Navbar() {
                 fontSize: "clamp(16px, 3vw, 22px)",
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                color: "#0B0C10",
+                color: "#FFFFFF",
               }}
             >
               RAVI
@@ -249,7 +245,7 @@ export function Navbar() {
                       fontWeight: 700,
                       letterSpacing: "0.2em",
                       textTransform: "uppercase",
-                      color: active ? "#0B0C10" : "#4A4D58",
+                      color: active ? "#FFFFFF" : "#A0A5B5",
                       textDecoration: "none",
                       transition: "color 0.2s ease",
                       display: "flex",
@@ -263,7 +259,7 @@ export function Navbar() {
                     <span
                       style={{
                         fontSize: "8px",
-                        color: active ? "#E6B800" : "#8A8E9E",
+                        color: active ? "#E6B800" : "#6C7284",
                         transition: "color 0.2s ease",
                       }}
                     >
@@ -278,12 +274,13 @@ export function Navbar() {
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: active ? "2px" : "2px",
-                        background: "#0B0C10",
+                        height: "2px",
+                        background: "#E6B800",
                         transform: active ? "scaleX(1)" : "scaleX(0)",
                         transformOrigin: "center",
                         borderRadius: "2px",
                         zIndex: 1,
+                        boxShadow: "0 0 8px rgba(230, 184, 0, 0.6)",
                       }}
                     />
                   </Link>
@@ -301,7 +298,7 @@ export function Navbar() {
                 fontSize: "9px",
                 fontWeight: 700,
                 letterSpacing: "0.15em",
-                color: "#8A8E9E",
+                color: "#A0A5B5",
                 textTransform: "uppercase",
               }}
             >
@@ -316,9 +313,10 @@ export function Navbar() {
                 fontWeight: 700,
                 letterSpacing: "0.25em",
                 textTransform: "uppercase",
-                color: "#0B0C10",
+                color: "#FFFFFF",
                 textDecoration: "none",
-                border: "2px solid #0B0C10",
+                background: "#0B0C10",
+                border: "2px solid #E6B800",
                 padding: "6px 12px",
                 boxShadow: "3px 3px 0px #E6B800",
                 transition: "all 0.2s ease",
@@ -348,7 +346,7 @@ export function Navbar() {
                 display: "block",
                 width: "24px",
                 height: "3px",
-                background: "#0B0C10",
+                background: "#FFFFFF",
                 transform: isOpen ? "translateY(8px) rotate(45deg)" : "none",
                 transition: "transform 0.3s ease, background 0.3s ease",
               }}
@@ -370,7 +368,7 @@ export function Navbar() {
                 display: "block",
                 width: "24px",
                 height: "3px",
-                background: "#0B0C10",
+                background: "#FFFFFF",
                 transform: isOpen ? "translateY(-8px) rotate(-45deg)" : "none",
                 transition: "transform 0.3s ease, background 0.3s ease",
               }}
@@ -385,7 +383,7 @@ export function Navbar() {
         id="nav-mobile-drawer"
         className="md:hidden fixed inset-0 z-40"
         style={{
-          background: "#FFFFFF",
+          background: "#0B0C10",
           transform: "translateX(100%)",
           opacity: 0,
           pointerEvents: isOpen ? "all" : "none",
@@ -395,7 +393,7 @@ export function Navbar() {
           padding: "100px 32px 40px",
         }}
       >
-        {/* Decorative yellow line */}
+        {/* Decorative gradient line */}
         <div
           style={{
             position: "absolute",
@@ -417,7 +415,7 @@ export function Navbar() {
             fontSize: "9px",
             fontWeight: 700,
             letterSpacing: "0.2em",
-            color: "#8A8E9E",
+            color: "#A0A5B5",
             textTransform: "uppercase",
           }}
         >
@@ -433,7 +431,7 @@ export function Navbar() {
                 key={l.to}
                 className="nav-drawer-item"
                 style={{
-                  borderBottom: "2px solid rgba(11, 12, 16, 0.08)",
+                  borderBottom: "2px solid rgba(255, 255, 255, 0.1)",
                 }}
               >
                 <Link
@@ -455,7 +453,7 @@ export function Navbar() {
                         fontSize: "10px",
                         fontWeight: 700,
                         letterSpacing: "0.25em",
-                        color: active ? "#E6B800" : "#8A8E9E",
+                        color: active ? "#E6B800" : "#6C7284",
                         textTransform: "uppercase",
                       }}
                     >
@@ -468,7 +466,7 @@ export function Navbar() {
                         fontSize: "clamp(2.4rem, 10vw, 3.5rem)",
                         textTransform: "uppercase",
                         letterSpacing: "0.03em",
-                        color: active ? "#E6B800" : "#0B0C10",
+                        color: active ? "#E6B800" : "#FFFFFF",
                         lineHeight: 1,
                         transition: "color 0.2s ease",
                       }}
@@ -481,7 +479,7 @@ export function Navbar() {
                       fontFamily: "var(--font-mono)",
                       fontSize: "18px",
                       fontWeight: 900,
-                      color: active ? "#E6B800" : "#0B0C10",
+                      color: active ? "#E6B800" : "#FFFFFF",
                       transition: "transform 0.3s ease",
                     }}
                   >
@@ -497,7 +495,7 @@ export function Navbar() {
         <div className="nav-drawer-item">
           <div
             style={{
-              borderTop: "2px solid #0B0C10",
+              borderTop: "2px solid #E6B800",
               paddingTop: "24px",
               display: "flex",
               alignItems: "center",
@@ -512,7 +510,7 @@ export function Navbar() {
                   fontSize: "9px",
                   fontWeight: 700,
                   letterSpacing: "0.25em",
-                  color: "#4A4D58",
+                  color: "#A0A5B5",
                   textTransform: "uppercase",
                   marginBottom: "4px",
                 }}
@@ -525,7 +523,7 @@ export function Navbar() {
                   fontSize: "9px",
                   fontWeight: 700,
                   letterSpacing: "0.2em",
-                  color: "#00B04F",
+                  color: "#00E676",
                   textTransform: "uppercase",
                 }}
               >
@@ -540,10 +538,11 @@ export function Navbar() {
                 fontSize: "9px",
                 fontWeight: 700,
                 letterSpacing: "0.25em",
-                color: "#0B0C10",
+                color: "#FFFFFF",
                 textTransform: "uppercase",
                 textDecoration: "none",
-                border: "2px solid #0B0C10",
+                background: "#0B0C10",
+                border: "2px solid #E6B800",
                 padding: "6px 12px",
                 boxShadow: "3px 3px 0px #E6B800",
               }}
