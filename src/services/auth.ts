@@ -1,5 +1,5 @@
 const PASSPHRASE_STORAGE_KEY = "ravi_admin_passphrase_v1";
-const DEFAULT_PASSPHRASE = import.meta.env.VITE_ADMIN_PASSPHRASE ?? "";
+const DEFAULT_PASSPHRASE = import.meta.env.VITE_ADMIN_PASSPHRASE || "cyberpunk2049";
 
 export function getAdminPassphrase(): string {
   if (typeof window === "undefined") return DEFAULT_PASSPHRASE;
