@@ -14,22 +14,21 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cp-bg)", padding: "24px" }}>
-      <div style={{ textAlign: "center", maxWidth: "480px" }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--cp-yellow)", marginBottom: "16px" }}>
-          ERROR // 404
-        </div>
-        <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: "clamp(6rem, 20vw, 12rem)", textTransform: "uppercase", color: "var(--cp-text)", lineHeight: 0.88, marginBottom: "24px" }}>404</h1>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.15em", color: "var(--cp-muted)", textTransform: "uppercase", marginBottom: "32px" }}>
-          // PAGE NOT FOUND. SIGNAL LOST.
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-7xl font-bold text-foreground">404</h1>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          The page you're looking for doesn't exist or has been moved.
         </p>
-        <Link
-          to="/"
-          className="cyber-btn"
-          style={{ display: "inline-flex" }}
-        >
-          RETURN HOME →
-        </Link>
+        <div className="mt-6">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Go home
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -43,32 +42,29 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cp-bg)", padding: "24px" }}>
-      <div style={{ textAlign: "center", maxWidth: "480px" }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--cp-red)", marginBottom: "16px" }}>
-          SYSTEM // ERROR
-        </div>
-        <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: "clamp(2rem, 8vw, 4rem)", textTransform: "uppercase", color: "var(--cp-text)", lineHeight: 0.95, marginBottom: "16px" }}>
-          PAGE DIDN'T LOAD
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          This page didn't load
         </h1>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.12em", color: "var(--cp-muted)", lineHeight: 1.7, marginBottom: "32px" }}>
-          // SOMETHING WENT WRONG. TRY REFRESHING OR HEAD BACK HOME.
+        <p className="mt-2 text-sm text-muted-foreground">
+          Something went wrong on our end. You can try refreshing or head back home.
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "12px" }}>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="cyber-btn"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            TRY AGAIN
+            Try again
           </button>
           <a
             href="/"
-            className="cyber-btn-secondary"
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            GO HOME
+            Go home
           </a>
         </div>
       </div>
@@ -109,7 +105,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=JetBrains+Mono:wght@400;500;700;800&family=Orbitron:wght@600;800;900&family=Syne:wght@700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap",
       },
     ],
   }),

@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { type Artwork } from "@/types/artwork";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface ArtworkCardProps {
   art: Artwork;
@@ -10,29 +16,162 @@ interface ArtworkCardProps {
 export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [hovered, setHovered] = useState(false);
+
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const cardBoxRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const shineRef = useRef<HTMLDivElement>(null);
+
   const imageCount = art.images && art.images.length > 1 ? art.images.length : 0;
   const num = String(index + 1).padStart(2, "0");
 
+  // ScrollTrigger Entrance Reveal
+  useEffect(() => {
+    if (typeof window === "undefined" || !cardRef.current) return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        cardRef.current,
+        { opacity: 0, y: 50, scale: 0.9, rotateX: 10 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotateX: 0,
+          duration: 0.8,
+          ease: "back.out(1.4)",
+          scrollTrigger: {
+            trigger: cardRef.current,
+            start: "top 90%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }, cardRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  // Desktop Mouse Move CRAZY 3D Tilt Parallax Effect
+  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (typeof window === "undefined" || window.innerWidth < 768) return;
+    if (!cardBoxRef.current) return;
+
+    const rect = cardBoxRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = ((y - centerY) / centerY) * -10; // Crazier tilt 10deg
+    const rotateY = ((x - centerX) / centerX) * 10;
+
+    gsap.to(cardBoxRef.current, {
+      rotateX: rotateX,
+      rotateY: rotateY,
+      transformPerspective: 800,
+      duration: 0.25,
+      ease: "power2.out",
+    });
+
+    // Shine sweep effect following mouse
+    if (shineRef.current) {
+      gsap.to(shineRef.current, {
+        x: (x / rect.width) * 100 + "%",
+        y: (y / rect.height) * 100 + "%",
+        duration: 0.2,
+      });
+    }
+  };
+
+  const handleMouseEnter = () => {
+    setHovered(true);
+    if (!cardBoxRef.current) return;
+
+    gsap.to(cardBoxRef.current, {
+      y: -10,
+      boxShadow: "8px 12px 0px #0B0C10, 0 20px 40px rgba(0,0,0,0.12)",
+      borderColor: "#0B0C10",
+      duration: 0.3,
+      ease: "back.out(1.7)",
+    });
+
+    if (imageRef.current) {
+      gsap.to(imageRef.current, {
+        scale: 1.09,
+        duration: 0.5,
+        ease: "power2.out",
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHovered(false);
+    if (!cardBoxRef.current) return;
+
+    gsap.to(cardBoxRef.current, {
+      y: 0,
+      rotateX: 0,
+      rotateY: 0,
+      boxShadow: "4px 4px 0px #0B0C10, 0 6px 20px rgba(0,0,0,0.06)",
+      borderColor: "#0B0C10",
+      duration: 0.4,
+      ease: "power3.out",
+    });
+
+    if (imageRef.current) {
+      gsap.to(imageRef.current, {
+        scale: 1,
+        duration: 0.5,
+        ease: "power2.out",
+      });
+    }
+  };
+
+  const handleMouseDown = () => {
+    if (!cardBoxRef.current) return;
+    gsap.to(cardBoxRef.current, {
+      scale: 0.96,
+      duration: 0.1,
+      ease: "power2.out",
+    });
+  };
+
+  const handleMouseUp = () => {
+    if (!cardBoxRef.current) return;
+    gsap.to(cardBoxRef.current, {
+      scale: 1,
+      duration: 0.2,
+      ease: "elastic.out(1.2, 0.4)",
+    });
+  };
+
   return (
     <Link
+      ref={cardRef}
       to={art.id.startsWith("demo-") ? "/gallery" : "/artwork/$id"}
       params={{ id: art.id }}
       className="group block"
       id={`artwork-card-${art.id}`}
       style={{ textDecoration: "none" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseMove={handleMouseMove}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
     >
       <div
+        ref={cardBoxRef}
         style={{
           position: "relative",
-          background: "var(--cp-surface)",
-          border: `1px solid ${hovered ? "rgba(245,240,0,0.55)" : "rgba(245,240,0,0.18)"}`,
-          transition: "border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease",
-          transform: hovered ? "translateY(-4px)" : "translateY(0)",
-          boxShadow: hovered
-            ? "0 0 30px rgba(245,240,0,0.1), 0 12px 40px rgba(0,0,0,0.5)"
-            : "0 4px 16px rgba(0,0,0,0.3)",
+          background: "#FFFFFF",
+          border: "2px solid #0B0C10",
+          boxShadow: "4px 4px 0px #0B0C10, 0 6px 20px rgba(0,0,0,0.06)",
+          transformStyle: "preserve-3d",
+          willChange: "transform",
+          clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
         }}
       >
         {/* Corner brackets — top left */}
@@ -41,12 +180,11 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
             position: "absolute",
             top: 0,
             left: 0,
-            width: "20px",
-            height: "20px",
-            borderTop: `2px solid ${hovered ? "var(--cp-yellow)" : "rgba(245,240,0,0.5)"}`,
-            borderLeft: `2px solid ${hovered ? "var(--cp-yellow)" : "rgba(245,240,0,0.5)"}`,
+            width: "16px",
+            height: "16px",
+            borderTop: "3px solid #E6B800",
+            borderLeft: "3px solid #E6B800",
             zIndex: 3,
-            transition: "border-color 0.3s ease",
             pointerEvents: "none",
           }}
         />
@@ -56,12 +194,11 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
             position: "absolute",
             bottom: 0,
             right: 0,
-            width: "20px",
-            height: "20px",
-            borderBottom: `2px solid ${hovered ? "var(--cp-yellow)" : "rgba(245,240,0,0.5)"}`,
-            borderRight: `2px solid ${hovered ? "var(--cp-yellow)" : "rgba(245,240,0,0.5)"}`,
+            width: "16px",
+            height: "16px",
+            borderBottom: "3px solid #00B8D4",
+            borderRight: "3px solid #00B8D4",
             zIndex: 3,
-            transition: "border-color 0.3s ease",
             pointerEvents: "none",
           }}
         />
@@ -82,10 +219,12 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
             style={{
               fontFamily: "var(--font-mono)",
               fontSize: "9px",
+              fontWeight: 800,
               letterSpacing: "0.2em",
-              color: hovered ? "var(--cp-yellow)" : "var(--cp-dim)",
+              color: "#0B0C10",
               textTransform: "uppercase",
-              transition: "color 0.3s ease",
+              background: "#F5E000",
+              padding: "2px 6px",
             }}
           >
             {num} / ARTWORK
@@ -100,16 +239,17 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
             right: "14px",
             zIndex: 4,
             padding: "3px 8px",
-            border: "1px solid rgba(156,255,0,0.4)",
-            background: "rgba(156,255,0,0.08)",
+            border: "1px solid #00B04F",
+            background: "rgba(0,176,79,0.1)",
           }}
         >
           <span
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "7px",
+              fontSize: "8px",
+              fontWeight: 800,
               letterSpacing: "0.25em",
-              color: "var(--cp-green)",
+              color: "#00B04F",
               textTransform: "uppercase",
             }}
           >
@@ -123,8 +263,8 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
             aspectRatio: "4/5",
             overflow: "hidden",
             position: "relative",
-            background: "var(--cp-surface2)",
-            marginTop: "36px",
+            background: "#F1F3F9",
+            marginTop: "38px",
           }}
         >
           {/* Shimmer loader */}
@@ -133,7 +273,7 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
               style={{
                 position: "absolute",
                 inset: 0,
-                background: "linear-gradient(90deg, var(--cp-surface2) 0%, var(--cp-surface3) 50%, var(--cp-surface2) 100%)",
+                background: "linear-gradient(90deg, #F1F3F9 0%, #E4E7F0 50%, #F1F3F9 100%)",
                 backgroundSize: "200% 100%",
                 animation: "shimmer 1.5s infinite",
               }}
@@ -141,6 +281,7 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
           )}
 
           <img
+            ref={imageRef}
             src={art.image}
             alt={art.title}
             loading="lazy"
@@ -150,33 +291,22 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
               height: "100%",
               objectFit: "cover",
               opacity: imgLoaded ? 1 : 0,
-              transition: "opacity 0.5s ease, transform 0.6s cubic-bezier(0.19,1,0.22,1)",
-              transform: hovered ? "scale(1.06)" : "scale(1)",
+              transition: "opacity 0.5s ease",
             }}
           />
 
-          {/* Scanline overlay on hover */}
+          {/* Interactive Mouse Shine Overlay */}
           <div
+            ref={shineRef}
             style={{
               position: "absolute",
-              inset: 0,
-              backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px)",
-              opacity: hovered ? 1 : 0,
+              top: "-50%",
+              left: "-50%",
+              width: "200%",
+              height: "200%",
+              background: "radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 60%)",
+              opacity: hovered ? 0.6 : 0,
               transition: "opacity 0.3s ease",
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          />
-
-          {/* Neon border glow on hover */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              boxShadow: hovered
-                ? "inset 0 0 0 1px rgba(245,240,0,0.5), inset 0 0 20px rgba(245,240,0,0.05)"
-                : "inset 0 0 0 1px transparent",
-              transition: "box-shadow 0.35s ease",
               pointerEvents: "none",
               zIndex: 2,
             }}
@@ -190,9 +320,9 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
               left: 0,
               right: 0,
               padding: "20px 14px 14px",
-              background: "linear-gradient(to top, rgba(10,12,8,0.85) 0%, transparent 100%)",
+              background: "linear-gradient(to top, rgba(11,12,16,0.9) 0%, transparent 100%)",
               opacity: hovered ? 1 : 0,
-              transform: hovered ? "translateY(0)" : "translateY(8px)",
+              transform: hovered ? "translateY(0)" : "translateY(10px)",
               transition: "opacity 0.3s ease, transform 0.3s ease",
               zIndex: 3,
             }}
@@ -200,9 +330,10 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
             <span
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "10px",
+                fontSize: "11px",
+                fontWeight: 800,
                 letterSpacing: "0.2em",
-                color: "var(--cp-yellow)",
+                color: "#F5E000",
                 textTransform: "uppercase",
               }}
             >
@@ -221,34 +352,20 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
                 alignItems: "center",
                 gap: "4px",
                 padding: "3px 8px",
-                background: "rgba(0,0,0,0.6)",
-                backdropFilter: "blur(4px)",
-                border: "1px solid rgba(245,240,0,0.2)",
+                background: "#0B0C10",
+                color: "#FFFFFF",
                 zIndex: 4,
               }}
             >
-              {Array.from({ length: Math.min(imageCount, 4) }).map((_, i) => (
-                <span
-                  key={i}
-                  style={{
-                    display: "block",
-                    width: "4px",
-                    height: "4px",
-                    borderRadius: "50%",
-                    background: i === 0 ? "var(--cp-yellow)" : "rgba(255,255,255,0.4)",
-                  }}
-                />
-              ))}
               <span
                 style={{
                   fontFamily: "var(--font-mono)",
-                  fontSize: "8px",
-                  color: "rgba(255,255,255,0.6)",
+                  fontSize: "9px",
+                  fontWeight: 700,
                   letterSpacing: "0.1em",
-                  marginLeft: "2px",
                 }}
               >
-                {imageCount}
+                +{imageCount} VIEWS
               </span>
             </div>
           )}
@@ -257,8 +374,9 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
         {/* Info panel */}
         <div
           style={{
-            padding: "14px",
-            borderTop: "1px solid rgba(245,240,0,0.1)",
+            padding: "16px",
+            borderTop: "2px solid #0B0C10",
+            background: "#FFFFFF",
           }}
         >
           {/* Title */}
@@ -267,14 +385,13 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
             style={{
               fontFamily: "var(--font-display)",
               fontWeight: 900,
-              fontSize: "clamp(15px, 2.5vw, 20px)",
+              fontSize: "clamp(16px, 2.5vw, 22px)",
               textTransform: "uppercase",
-              letterSpacing: "0.04em",
-              color: hovered ? "var(--cp-yellow)" : "var(--cp-text)",
+              letterSpacing: "0.02em",
+              color: hovered ? "#E6B800" : "#0B0C10",
               lineHeight: 1.1,
               marginBottom: "10px",
               transition: "color 0.3s ease",
-              animationPlayState: hovered ? "running" : "paused",
             }}
           >
             {art.title}
@@ -292,10 +409,11 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
             <span
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "9px",
+                fontSize: "10px",
+                fontWeight: 700,
                 letterSpacing: "0.18em",
                 textTransform: "uppercase",
-                color: "var(--cp-muted)",
+                color: "#4A4D58",
               }}
             >
               {art.medium} · {art.year}
@@ -312,10 +430,13 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
               <span
                 style={{
                   fontFamily: "var(--font-display)",
-                  fontWeight: 700,
-                  fontSize: "14px",
-                  color: "var(--cp-text)",
-                  letterSpacing: "0.04em",
+                  fontWeight: 900,
+                  fontSize: "16px",
+                  color: "#0B0C10",
+                  letterSpacing: "0.02em",
+                  background: "#F5E000",
+                  padding: "2px 8px",
+                  border: "1px solid #0B0C10",
                 }}
               >
                 ₹{art.price.toLocaleString()}
@@ -323,10 +444,11 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
               <span
                 style={{
                   fontFamily: "var(--font-mono)",
-                  fontSize: "11px",
-                  color: hovered ? "var(--cp-yellow)" : "var(--cp-dim)",
-                  transition: "color 0.3s ease, transform 0.3s ease",
-                  transform: hovered ? "translateX(3px)" : "translateX(0)",
+                  fontSize: "14px",
+                  fontWeight: 900,
+                  color: hovered ? "#E6B800" : "#0B0C10",
+                  transition: "transform 0.3s ease",
+                  transform: hovered ? "translateX(4px)" : "translateX(0)",
                   display: "inline-block",
                 }}
               >

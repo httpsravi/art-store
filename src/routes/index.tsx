@@ -1,11 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { MEDIUMS, fetchArtworks } from "@/services";
 import { type Artwork } from "@/types/artwork";
 import { PLACEHOLDER_WORKS } from "@/constants/placeholders";
 import { ArtworkCard } from "@/components/common/ArtworkCard";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,6 +36,23 @@ const MEDIUM_META: Record<string, { index: string; tag: string; description: str
 function Home() {
   const [works, setWorks] = useState<Artwork[]>([]);
 
+  const heroRef = useRef<HTMLDivElement>(null);
+  const heroPillsRef = useRef<HTMLDivElement>(null);
+  const line1Ref = useRef<HTMLSpanElement>(null);
+  const line2Ref = useRef<HTMLSpanElement>(null);
+  const heroDescRef = useRef<HTMLDivElement>(null);
+  const heroBtnsRef = useRef<HTMLDivElement>(null);
+  const heroHudRef = useRef<HTMLDivElement>(null);
+  const orb1Ref = useRef<HTMLDivElement>(null);
+  const orb2Ref = useRef<HTMLDivElement>(null);
+  const spinRingRef = useRef<HTMLDivElement>(null);
+
+  const categoriesRef = useRef<HTMLDivElement>(null);
+  const categoriesGridRef = useRef<HTMLDivElement>(null);
+
+  const featuredWorksRef = useRef<HTMLDivElement>(null);
+  const commissionCtaRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetchArtworks()
       .then((data) => {
@@ -40,6 +63,165 @@ function Home() {
       });
   }, []);
 
+  // Coordinated CRAZY GSAP Hero Entrance Timeline & ScrollTriggers
+  useEffect(() => {
+    if (typeof window === "undefined" || !heroRef.current) return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
+    const ctx = gsap.context(() => {
+      // 1. CRAZY Hero Entrance Timeline
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      tl.fromTo(
+        heroPillsRef.current,
+        { opacity: 0, y: -30, scale: 0.8 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.7)" }
+      )
+        .fromTo(
+          line1Ref.current,
+          { opacity: 0, y: 80, skewX: -12, scale: 1.2 },
+          { opacity: 1, y: 0, skewX: 0, scale: 1, duration: 0.9, ease: "elastic.out(1, 0.5)" },
+          "-=0.3"
+        )
+        .fromTo(
+          line2Ref.current,
+          { opacity: 0, y: 80, skewX: 12, scale: 1.2 },
+          { opacity: 1, y: 0, skewX: 0, scale: 1, duration: 0.9, ease: "elastic.out(1, 0.5)" },
+          "-=0.6"
+        )
+        .fromTo(
+          heroDescRef.current,
+          { opacity: 0, x: -40 },
+          { opacity: 1, x: 0, duration: 0.7, ease: "power3.out" },
+          "-=0.4"
+        )
+        .fromTo(
+          heroBtnsRef.current?.children ? Array.from(heroBtnsRef.current.children) : heroBtnsRef.current,
+          { opacity: 0, y: 30, scale: 0.9 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.15, ease: "back.out(1.7)" },
+          "-=0.4"
+        )
+        .fromTo(
+          heroHudRef.current,
+          { opacity: 0, scale: 0.5 },
+          { opacity: 1, scale: 1, duration: 0.8 },
+          "-=0.5"
+        );
+
+      // Continuous Slow Rotation Ring
+      if (spinRingRef.current) {
+        gsap.to(spinRingRef.current, {
+          rotation: 360,
+          duration: 30,
+          repeat: -1,
+          ease: "none",
+        });
+      }
+
+      // Ambient Glow Orbs Yoyo Floating Motion
+      if (orb1Ref.current) {
+        gsap.to(orb1Ref.current, {
+          y: 40,
+          x: 20,
+          scale: 1.15,
+          duration: 5,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+        });
+      }
+      if (orb2Ref.current) {
+        gsap.to(orb2Ref.current, {
+          y: -40,
+          x: -20,
+          scale: 1.2,
+          duration: 6,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+        });
+      }
+
+      // 2. Categories ScrollTrigger
+      if (categoriesRef.current) {
+        gsap.fromTo(
+          categoriesRef.current.querySelector(".section-header-box"),
+          { opacity: 0, y: 40, rotateX: 15 },
+          {
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
+            duration: 0.8,
+            ease: "back.out(1.4)",
+            scrollTrigger: {
+              trigger: categoriesRef.current,
+              start: "top 85%",
+            },
+          }
+        );
+      }
+
+      if (categoriesGridRef.current) {
+        gsap.fromTo(
+          categoriesGridRef.current.children,
+          { opacity: 0, y: 50, scale: 0.95 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.7,
+            stagger: 0.15,
+            ease: "back.out(1.5)",
+            scrollTrigger: {
+              trigger: categoriesGridRef.current,
+              start: "top 85%",
+            },
+          }
+        );
+      }
+
+      // 3. Featured Works Header ScrollTrigger
+      if (featuredWorksRef.current) {
+        gsap.fromTo(
+          featuredWorksRef.current.querySelector(".featured-header"),
+          { opacity: 0, y: 40 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: featuredWorksRef.current,
+              start: "top 85%",
+            },
+          }
+        );
+      }
+
+      // 4. Commission CTA ScrollTrigger Box Expansion
+      if (commissionCtaRef.current) {
+        gsap.fromTo(
+          commissionCtaRef.current,
+          { opacity: 0, scale: 0.9, y: 40 },
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.9,
+            ease: "elastic.out(1, 0.6)",
+            scrollTrigger: {
+              trigger: commissionCtaRef.current,
+              start: "top 85%",
+            },
+          }
+        );
+      }
+    }, heroRef);
+
+    return () => ctx.revert();
+  }, []);
+
   const featured = works.slice(0, 6);
 
   return (
@@ -47,9 +229,10 @@ function Home() {
       <Navbar />
 
       {/* ═══════════════════════════════════════
-          HERO SECTION — High-Tech Poster UI
+          HERO SECTION — Vibrant White Poster UI
           ═══════════════════════════════════════ */}
       <section
+        ref={heroRef}
         id="hero"
         style={{
           position: "relative",
@@ -60,6 +243,7 @@ function Home() {
           overflow: "hidden",
           paddingTop: "90px",
           paddingBottom: "40px",
+          background: "#F8F9FC",
         }}
       >
         {/* Background Cyber Grid */}
@@ -69,38 +253,57 @@ function Home() {
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "linear-gradient(rgba(245,240,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(245,240,0,0.05) 1px, transparent 1px)",
+              "linear-gradient(rgba(11,12,16,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(11,12,16,0.04) 1px, transparent 1px)",
             backgroundSize: "clamp(40px, 8vw, 80px) clamp(40px, 8vw, 80px)",
             zIndex: 0,
             pointerEvents: "none",
           }}
         />
 
-        {/* Dynamic Glow Orbs for Mobile Depth */}
+        {/* Dynamic Glow Orbs for Depth */}
         <div
+          ref={orb1Ref}
           aria-hidden
           style={{
             position: "absolute",
-            top: "20%",
-            left: "-10%",
-            width: "350px",
-            height: "350px",
-            background: "radial-gradient(circle, rgba(245,240,0,0.12) 0%, transparent 70%)",
-            filter: "blur(60px)",
+            top: "15%",
+            left: "-5%",
+            width: "450px",
+            height: "450px",
+            background: "radial-gradient(circle, rgba(245,224,0,0.25) 0%, transparent 70%)",
+            filter: "blur(70px)",
             pointerEvents: "none",
             zIndex: 0,
           }}
         />
         <div
+          ref={orb2Ref}
           aria-hidden
           style={{
             position: "absolute",
             bottom: "10%",
-            right: "-10%",
-            width: "350px",
-            height: "350px",
-            background: "radial-gradient(circle, rgba(0,229,255,0.1) 0%, transparent 70%)",
-            filter: "blur(60px)",
+            right: "-5%",
+            width: "450px",
+            height: "450px",
+            background: "radial-gradient(circle, rgba(0,229,255,0.22) 0%, transparent 70%)",
+            filter: "blur(70px)",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        />
+
+        {/* Spinning Cyber Badge Ring Background */}
+        <div
+          ref={spinRingRef}
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: "20%",
+            right: "5%",
+            width: "320px",
+            height: "320px",
+            border: "2px dashed rgba(11,12,16,0.12)",
+            borderRadius: "50%",
             pointerEvents: "none",
             zIndex: 0,
           }}
@@ -112,17 +315,17 @@ function Home() {
           style={{
             position: "absolute",
             top: "100px",
-            left: "16px",
+            left: "20px",
             pointerEvents: "none",
             zIndex: 2,
           }}
         >
           <div
             style={{
-              width: "24px",
-              height: "24px",
-              borderTop: "2px solid var(--cp-yellow)",
-              borderLeft: "2px solid var(--cp-yellow)",
+              width: "28px",
+              height: "28px",
+              borderTop: "3px solid #0B0C10",
+              borderLeft: "3px solid #0B0C10",
             }}
           />
         </div>
@@ -131,28 +334,29 @@ function Home() {
           style={{
             position: "absolute",
             bottom: "40px",
-            right: "16px",
+            right: "20px",
             pointerEvents: "none",
             zIndex: 2,
           }}
         >
           <div
             style={{
-              width: "24px",
-              height: "24px",
-              borderBottom: "2px solid var(--cp-cyan)",
-              borderRight: "2px solid var(--cp-cyan)",
+              width: "28px",
+              height: "28px",
+              borderBottom: "3px solid #0B0C10",
+              borderRight: "3px solid #0B0C10",
             }}
           />
         </div>
 
-        {/* HUD Telemetry Labels (Desktop & Mobile view) */}
+        {/* HUD Telemetry Labels */}
         <div
+          ref={heroHudRef}
           aria-hidden
           style={{
             position: "absolute",
             top: "100px",
-            right: "16px",
+            right: "20px",
             display: "flex",
             flexDirection: "column",
             gap: "6px",
@@ -161,15 +365,19 @@ function Home() {
             zIndex: 2,
           }}
         >
-          {["SYS//RAVI.DAVINCI", "DROP_2049", "ONLINE // 100%"].map((label) => (
+          {["SYS//RAVI.DAVINCI", "WHITE_EDITION_2049", "ONLINE // 100%"].map((label) => (
             <span
               key={label}
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "8px",
+                fontSize: "9px",
+                fontWeight: 800,
                 letterSpacing: "0.2em",
-                color: "var(--cp-dim)",
+                color: "#4A4D58",
                 textTransform: "uppercase",
+                background: "#FFFFFF",
+                padding: "2px 8px",
+                border: "1px solid rgba(11,12,16,0.12)",
               }}
             >
               {label}
@@ -190,10 +398,10 @@ function Home() {
         >
           {/* Top Ticker / Category Pills */}
           <div
-            className="animate-fade-up"
+            ref={heroPillsRef}
             style={{
               display: "flex",
-              gap: "8px",
+              gap: "10px",
               marginBottom: "24px",
               flexWrap: "wrap",
               alignItems: "center",
@@ -202,65 +410,73 @@ function Home() {
             <span
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "9px",
+                fontSize: "10px",
                 letterSpacing: "0.2em",
                 textTransform: "uppercase",
-                background: "var(--cp-yellow)",
-                color: "#0A0B09",
-                padding: "3px 8px",
-                fontWeight: 700,
+                background: "#F5E000",
+                color: "#0B0C10",
+                padding: "4px 10px",
+                fontWeight: 900,
+                border: "1px solid #0B0C10",
+                boxShadow: "3px 3px 0px #0B0C10",
                 display: "inline-block",
               }}
             >
-              ORIGINAL ART
+              ORIGINAL ARTWORK
             </span>
             <span
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "9px",
+                fontSize: "10px",
                 letterSpacing: "0.2em",
                 textTransform: "uppercase",
-                color: "var(--cp-cyan)",
-                border: "1px solid rgba(0,229,255,0.4)",
-                padding: "3px 8px",
-                background: "rgba(0,229,255,0.05)",
+                color: "#0B0C10",
+                border: "1px solid #0B0C10",
+                padding: "4px 10px",
+                background: "#FFFFFF",
+                fontWeight: 800,
+                boxShadow: "3px 3px 0px #00B8D4",
                 display: "inline-block",
               }}
             >
-              WORLDWIDE SHIPPING
+              WORLDWIDE EXPRESS SHIPPING
             </span>
           </div>
 
           {/* UNIQUE ORBITRON DISPLAY HEADLINE */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
             <h1
-              className="animate-fade-up delay-100"
               style={{
                 fontFamily: "var(--font-display)",
                 fontWeight: 900,
-                fontSize: "clamp(2.8rem, 11vw, 11rem)",
-                lineHeight: 0.9,
+                fontSize: "clamp(3.2rem, 12vw, 11rem)",
+                lineHeight: 0.88,
                 textTransform: "uppercase",
-                letterSpacing: "-0.02em",
-                color: "var(--cp-text)",
+                letterSpacing: "-0.03em",
+                color: "#0B0C10",
                 margin: 0,
                 wordBreak: "break-word",
               }}
             >
               <span
+                ref={line1Ref}
                 style={{
                   display: "block",
-                  color: "var(--cp-text)",
-                  textShadow: "0 0 30px rgba(255,255,255,0.1)",
+                  color: "#0B0C10",
+                  textShadow: "4px 4px 0px #F5E000",
                 }}
               >
                 RAVI
               </span>
               <span
+                ref={line2Ref}
                 style={{
                   display: "block",
-                  color: "var(--cp-yellow)",
-                  textShadow: "0 0 50px rgba(245,240,0,0.35)",
+                  color: "#0B0C10",
+                  background: "linear-gradient(90deg, #0B0C10 0%, #333 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(4px 4px 0px #00B8D4)",
                 }}
               >
                 DAVINCI.
@@ -270,46 +486,45 @@ function Home() {
 
           {/* Sub Content — Grid for Mobile & Desktop */}
           <div
-            className="animate-fade-up delay-300"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
-              gap: "24px",
+              gap: "28px",
               alignItems: "end",
-              marginTop: "32px",
+              marginTop: "36px",
             }}
           >
             {/* Description */}
             <div
+              ref={heroDescRef}
               style={{
-                background: "rgba(18,21,16,0.8)",
-                backdropFilter: "blur(10px)",
-                borderLeft: "3px solid var(--cp-yellow)",
-                padding: "16px 20px",
-                borderTop: "1px solid rgba(245,240,0,0.15)",
-                borderRight: "1px solid rgba(245,240,0,0.15)",
-                borderBottom: "1px solid rgba(245,240,0,0.15)",
+                background: "#FFFFFF",
+                border: "2px solid #0B0C10",
+                borderLeft: "6px solid #F5E000",
+                padding: "20px 24px",
+                boxShadow: "6px 6px 0px rgba(11,12,16,0.1)",
               }}
             >
               <p
                 style={{
                   fontFamily: "var(--font-mono)",
-                  fontSize: "9px",
+                  fontSize: "10px",
                   letterSpacing: "0.25em",
                   textTransform: "uppercase",
-                  color: "var(--cp-yellow)",
+                  color: "#0B0C10",
                   marginBottom: "8px",
-                  fontWeight: 700,
+                  fontWeight: 900,
                 }}
               >
                 // ARTWORK DIRECTIVE
               </p>
               <p
                 style={{
-                  fontSize: "13px",
-                  color: "var(--cp-muted)",
+                  fontSize: "14px",
+                  color: "#4A4D58",
                   lineHeight: 1.7,
                   margin: 0,
+                  fontWeight: 500,
                 }}
               >
                 Raw charcoal, heavy acrylics, and graphite studies. Hand-drawn physical pieces infused with rebellious cyber aesthetics.
@@ -318,11 +533,11 @@ function Home() {
 
             {/* Mobile & Desktop Action Buttons */}
             <div
-              className="animate-fade-up delay-500"
+              ref={heroBtnsRef}
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "12px",
+                gap: "14px",
                 width: "100%",
               }}
             >
@@ -330,11 +545,23 @@ function Home() {
                 to="/gallery"
                 id="hero-gallery-cta"
                 className="cyber-btn"
+                onMouseEnter={(e) => {
+                  gsap.to(e.currentTarget, { scale: 1.04, duration: 0.25, ease: "back.out(2)" });
+                }}
+                onMouseLeave={(e) => {
+                  gsap.to(e.currentTarget, { scale: 1, duration: 0.25, ease: "power2.out" });
+                }}
+                onMouseDown={(e) => {
+                  gsap.to(e.currentTarget, { scale: 0.96, duration: 0.1 });
+                }}
+                onMouseUp={(e) => {
+                  gsap.to(e.currentTarget, { scale: 1.04, duration: 0.15 });
+                }}
                 style={{
                   width: "100%",
                   justifyContent: "center",
                   fontSize: "12px",
-                  padding: "16px 24px",
+                  padding: "18px 24px",
                   textAlign: "center",
                 }}
               >
@@ -344,11 +571,23 @@ function Home() {
                 to="/contact"
                 id="hero-commission-cta"
                 className="cyber-btn-secondary"
+                onMouseEnter={(e) => {
+                  gsap.to(e.currentTarget, { scale: 1.04, duration: 0.25, ease: "back.out(2)" });
+                }}
+                onMouseLeave={(e) => {
+                  gsap.to(e.currentTarget, { scale: 1, duration: 0.25, ease: "power2.out" });
+                }}
+                onMouseDown={(e) => {
+                  gsap.to(e.currentTarget, { scale: 0.96, duration: 0.1 });
+                }}
+                onMouseUp={(e) => {
+                  gsap.to(e.currentTarget, { scale: 1.04, duration: 0.15 });
+                }}
                 style={{
                   width: "100%",
                   justifyContent: "center",
                   fontSize: "11px",
-                  padding: "14px 24px",
+                  padding: "16px 24px",
                   textAlign: "center",
                 }}
               >
@@ -360,10 +599,9 @@ function Home() {
 
         {/* Scroll Indicator */}
         <div
-          className="animate-float"
           style={{
             position: "relative",
-            marginTop: "40px",
+            marginTop: "48px",
             alignSelf: "center",
             display: "flex",
             flexDirection: "column",
@@ -375,19 +613,20 @@ function Home() {
           <span
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "8px",
+              fontSize: "9px",
+              fontWeight: 800,
               letterSpacing: "0.3em",
               textTransform: "uppercase",
-              color: "var(--cp-dim)",
+              color: "#0B0C10",
             }}
           >
             SCROLL DOWN
           </span>
           <div
             style={{
-              width: "1px",
-              height: "24px",
-              background: "linear-gradient(180deg, var(--cp-yellow), transparent)",
+              width: "2px",
+              height: "28px",
+              background: "linear-gradient(180deg, #0B0C10, transparent)",
             }}
           />
         </div>
@@ -399,8 +638,8 @@ function Home() {
             bottom: 0,
             left: 0,
             right: 0,
-            height: "3px",
-            background: "linear-gradient(90deg, var(--cp-yellow), var(--cp-cyan), var(--cp-green))",
+            height: "4px",
+            background: "linear-gradient(90deg, #E6B800, #00B8D4, #FF0055)",
             zIndex: 5,
           }}
         />
@@ -410,6 +649,7 @@ function Home() {
           CATEGORIES SECTION — Mobile Optimized Stack
           ═══════════════════════════════════════ */}
       <section
+        ref={categoriesRef}
         id="categories"
         style={{
           position: "relative",
@@ -419,7 +659,7 @@ function Home() {
           padding: "80px 20px",
         }}
       >
-        <div style={{ marginBottom: "40px" }}>
+        <div className="section-header-box" style={{ marginBottom: "40px" }}>
           <div className="section-label" style={{ marginBottom: "12px" }}>
             MEDIUM ARCHIVE // SELECTION
           </div>
@@ -430,20 +670,21 @@ function Home() {
               fontSize: "clamp(2rem, 7vw, 5rem)",
               textTransform: "uppercase",
               lineHeight: 0.95,
-              color: "var(--cp-text)",
+              color: "#0B0C10",
               margin: 0,
             }}
           >
-            DISCIPLINE & <span style={{ color: "var(--cp-yellow)" }}>MEDIUM.</span>
+            DISCIPLINE & <span style={{ color: "#E6B800" }}>MEDIUM.</span>
           </h2>
         </div>
 
         {/* Cards Grid */}
         <div
+          ref={categoriesGridRef}
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
-            gap: "16px",
+            gap: "20px",
           }}
         >
           {MEDIUMS.filter((m) => m.id !== "all").map((m) => {
@@ -473,6 +714,7 @@ function Home() {
           FEATURED WORKS — Collectible Grid
           ═══════════════════════════════════════ */}
       <section
+        ref={featuredWorksRef}
         id="featured-works"
         style={{
           position: "relative",
@@ -485,6 +727,7 @@ function Home() {
         <div className="yellow-strip" style={{ marginBottom: "48px" }} />
 
         <div
+          className="featured-header"
           style={{
             display: "flex",
             flexWrap: "wrap",
@@ -505,27 +748,34 @@ function Home() {
                 fontSize: "clamp(2rem, 6vw, 4.5rem)",
                 textTransform: "uppercase",
                 lineHeight: 0.95,
-                color: "var(--cp-text)",
+                color: "#0B0C10",
                 margin: 0,
               }}
             >
-              FEATURED <span style={{ color: "var(--cp-yellow)" }}>WORKS.</span>
+              FEATURED <span style={{ color: "#E6B800" }}>WORKS.</span>
             </h2>
           </div>
           <Link
             to="/gallery"
             id="featured-see-all"
+            onMouseEnter={(e) => {
+              gsap.to(e.currentTarget, { x: 6, duration: 0.2, ease: "power2.out" });
+            }}
+            onMouseLeave={(e) => {
+              gsap.to(e.currentTarget, { x: 0, duration: 0.2, ease: "power2.out" });
+            }}
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "10px",
+              fontSize: "11px",
+              fontWeight: 800,
               letterSpacing: "0.2em",
               textTransform: "uppercase",
-              color: "var(--cp-yellow)",
+              color: "#0B0C10",
               textDecoration: "none",
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              borderBottom: "1px solid rgba(245,240,0,0.3)",
+              borderBottom: "2px solid #0B0C10",
               paddingBottom: "4px",
             }}
           >
@@ -561,12 +811,14 @@ function Home() {
         }}
       >
         <div
+          ref={commissionCtaRef}
           style={{
             position: "relative",
-            border: "1px solid rgba(245,240,0,0.3)",
-            background: "rgba(18,21,16,0.95)",
+            border: "2px solid #0B0C10",
+            background: "#FFFFFF",
             padding: "clamp(32px, 6vw, 64px) clamp(20px, 5vw, 48px)",
             overflow: "hidden",
+            boxShadow: "8px 8px 0px #0B0C10",
           }}
         >
           {/* Brackets */}
@@ -577,8 +829,8 @@ function Home() {
               left: 0,
               width: "24px",
               height: "24px",
-              borderTop: "2px solid var(--cp-yellow)",
-              borderLeft: "2px solid var(--cp-yellow)",
+              borderTop: "3px solid #E6B800",
+              borderLeft: "3px solid #E6B800",
             }}
           />
           <div
@@ -588,18 +840,19 @@ function Home() {
               right: 0,
               width: "24px",
               height: "24px",
-              borderBottom: "2px solid var(--cp-cyan)",
-              borderRight: "2px solid var(--cp-cyan)",
+              borderBottom: "3px solid #00B8D4",
+              borderRight: "3px solid #00B8D4",
             }}
           />
 
           <div
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "9px",
+              fontSize: "10px",
+              fontWeight: 800,
               letterSpacing: "0.25em",
               textTransform: "uppercase",
-              color: "var(--cp-yellow)",
+              color: "#0B0C10",
               marginBottom: "16px",
             }}
           >
@@ -613,20 +866,21 @@ function Home() {
               fontSize: "clamp(1.8rem, 6vw, 4.5rem)",
               textTransform: "uppercase",
               lineHeight: 0.95,
-              color: "var(--cp-text)",
+              color: "#0B0C10",
               marginBottom: "20px",
             }}
           >
-            WANT A <span style={{ color: "var(--cp-yellow)" }}>CUSTOM</span> PIECE?
+            WANT A <span style={{ color: "#E6B800" }}>CUSTOM</span> PIECE?
           </h2>
 
           <p
             style={{
-              fontSize: "14px",
-              color: "var(--cp-muted)",
+              fontSize: "15px",
+              color: "#4A4D58",
               lineHeight: 1.7,
               maxWidth: "540px",
               marginBottom: "32px",
+              fontWeight: 500,
             }}
           >
             Direct commissions are currently open for custom canvas portraits, anime art, and large charcoal pieces.
@@ -636,6 +890,18 @@ function Home() {
             to="/contact"
             id="commission-start-cta"
             className="cyber-btn"
+            onMouseEnter={(e) => {
+              gsap.to(e.currentTarget, { scale: 1.04, duration: 0.2, ease: "power2.out" });
+            }}
+            onMouseLeave={(e) => {
+              gsap.to(e.currentTarget, { scale: 1, duration: 0.2, ease: "power2.out" });
+            }}
+            onMouseDown={(e) => {
+              gsap.to(e.currentTarget, { scale: 0.96, duration: 0.1 });
+            }}
+            onMouseUp={(e) => {
+              gsap.to(e.currentTarget, { scale: 1.04, duration: 0.15 });
+            }}
             style={{
               display: "inline-flex",
               justifyContent: "center",
@@ -675,6 +941,31 @@ function MediumCard({
   count: number;
 }) {
   const [hovered, setHovered] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseEnter = () => {
+    setHovered(true);
+    if (cardRef.current) {
+      gsap.to(cardRef.current, {
+        y: -6,
+        boxShadow: "6px 6px 0px #0B0C10",
+        duration: 0.3,
+        ease: "power2.out",
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHovered(false);
+    if (cardRef.current) {
+      gsap.to(cardRef.current, {
+        y: 0,
+        boxShadow: "3px 3px 0px rgba(11,12,16,0.1)",
+        duration: 0.3,
+        ease: "power2.out",
+      });
+    }
+  };
 
   return (
     <Link
@@ -682,31 +973,34 @@ function MediumCard({
       search={search}
       id={`medium-card-${label.toLowerCase()}`}
       style={{ textDecoration: "none" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       <div
+        ref={cardRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         style={{
           position: "relative",
-          background: hovered ? "rgba(24,28,20,0.95)" : "var(--cp-surface)",
-          border: `1px solid ${hovered ? "var(--cp-yellow)" : "rgba(245,240,0,0.2)"}`,
+          background: "#FFFFFF",
+          border: "2px solid #0B0C10",
+          boxShadow: "3px 3px 0px rgba(11,12,16,0.1)",
           padding: "28px 24px",
           minHeight: "220px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          transition: "all 0.3s ease",
-          boxShadow: hovered ? "0 0 25px rgba(245,240,0,0.12)" : "none",
+          willChange: "transform",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "9px",
+              fontSize: "10px",
+              fontWeight: 800,
               letterSpacing: "0.2em",
-              color: "var(--cp-yellow)",
-              fontWeight: 700,
+              color: "#0B0C10",
+              background: "#F5E000",
+              padding: "2px 6px",
             }}
           >
             {index} // {tag}
@@ -714,10 +1008,11 @@ function MediumCard({
           <span
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "8px",
+              fontSize: "9px",
+              fontWeight: 700,
               letterSpacing: "0.15em",
-              color: "var(--cp-dim)",
-              border: "1px solid rgba(245,240,0,0.15)",
+              color: "#4A4D58",
+              border: "1px solid #0B0C10",
               padding: "2px 6px",
             }}
           >
@@ -732,7 +1027,7 @@ function MediumCard({
               fontWeight: 900,
               fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
               textTransform: "uppercase",
-              color: hovered ? "var(--cp-yellow)" : "var(--cp-text)",
+              color: hovered ? "#E6B800" : "#0B0C10",
               margin: 0,
               lineHeight: 1,
               transition: "color 0.2s ease",
@@ -743,11 +1038,12 @@ function MediumCard({
           <p
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              color: "var(--cp-muted)",
+              fontSize: "11px",
+              color: "#4A4D58",
               marginTop: "8px",
               marginBottom: "16px",
               lineHeight: 1.5,
+              fontWeight: 500,
             }}
           >
             {description}
@@ -755,11 +1051,14 @@ function MediumCard({
           <span
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: "9px",
+              fontSize: "10px",
+              fontWeight: 800,
               letterSpacing: "0.2em",
-              color: "var(--cp-cyan)",
+              color: "#00B8D4",
               textTransform: "uppercase",
               display: "inline-block",
+              transform: hovered ? "translateX(6px)" : "none",
+              transition: "transform 0.25s ease",
             }}
           >
             BROWSE COLLECTION →

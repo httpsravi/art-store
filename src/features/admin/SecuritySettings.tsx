@@ -37,135 +37,61 @@ export function SecuritySettings() {
   }
 
   return (
-    <section style={{ maxWidth: "420px" }}>
-      <h2
-        style={{
-          fontFamily: "var(--font-display)",
-          fontWeight: 900,
-          fontSize: "clamp(1.5rem, 4vw, 2rem)",
-          textTransform: "uppercase",
-          color: "var(--cp-text)",
-          marginBottom: "24px",
-        }}
-      >
-        SECURITY
-      </h2>
+    <section className="max-w-md">
+      <h2 className="text-display text-3xl mb-6 font-light">Security & Password</h2>
       <form
         onSubmit={handlePasswordChange}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
-          border: "1px solid rgba(245,240,0,0.15)",
-          padding: "24px",
-          background: "var(--cp-surface)",
-        }}
+        className="space-y-4 border border-border/50 p-6 bg-card/20"
       >
         {passwordStatus.error && (
-          <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: "var(--cp-red)",
-              background: "rgba(255,60,60,0.06)",
-              border: "1px solid rgba(255,60,60,0.2)",
-              padding: "12px",
-            }}
-          >
-            // {passwordStatus.error}
+          <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 p-3">
+            {passwordStatus.error}
           </div>
         )}
         {passwordStatus.success && (
-          <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: "var(--cp-green)",
-              background: "rgba(156,255,0,0.06)",
-              border: "1px solid rgba(156,255,0,0.2)",
-              padding: "12px",
-            }}
-          >
-            ● {passwordStatus.success}
+          <div className="text-xs text-green-500 bg-green-500/10 border border-green-500/20 p-3">
+            {passwordStatus.success}
           </div>
         )}
 
         <div>
-          <label
-            style={{
-              display: "block",
-              fontFamily: "var(--font-mono)",
-              fontSize: "9px",
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-              color: "var(--cp-muted)",
-              marginBottom: "8px",
-            }}
-          >
-            CURRENT PASSPHRASE
+          <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block">
+            Current Passphrase
           </label>
           <input
             type="password"
             value={currentPwd}
             onChange={(e) => setCurrentPwd(e.target.value)}
-            className="cyber-input"
+            className="w-full bg-input border border-border px-4 py-3 focus:outline-none focus:border-foreground"
           />
         </div>
 
         <div>
-          <label
-            style={{
-              display: "block",
-              fontFamily: "var(--font-mono)",
-              fontSize: "9px",
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-              color: "var(--cp-muted)",
-              marginBottom: "8px",
-            }}
-          >
-            NEW PASSPHRASE
+          <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block">
+            New Passphrase
           </label>
           <input
             type="password"
             value={newPwd}
             onChange={(e) => setNewPwd(e.target.value)}
-            className="cyber-input"
+            className="w-full bg-input border border-border px-4 py-3 focus:outline-none focus:border-foreground"
           />
         </div>
 
         <div>
-          <label
-            style={{
-              display: "block",
-              fontFamily: "var(--font-mono)",
-              fontSize: "9px",
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-              color: "var(--cp-muted)",
-              marginBottom: "8px",
-            }}
-          >
-            CONFIRM NEW PASSPHRASE
+          <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block">
+            Confirm New Passphrase
           </label>
           <input
             type="password"
             value={confirmNewPwd}
             onChange={(e) => setConfirmNewPwd(e.target.value)}
-            className="cyber-input"
+            className="w-full bg-input border border-border px-4 py-3 focus:outline-none focus:border-foreground"
           />
         </div>
 
-        <button
-          type="submit"
-          className="cyber-btn"
-          style={{ width: "100%", justifyContent: "center" }}
-        >
-          UPDATE PASSPHRASE →
+        <button className="w-full px-6 py-3 bg-primary text-primary-foreground text-xs uppercase tracking-[0.25em] hover:bg-primary/90">
+          Update Passphrase
         </button>
       </form>
     </section>

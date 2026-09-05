@@ -114,55 +114,26 @@ export function ArtworkManager({
   }
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 380px), 1fr))",
-        gap: "48px",
-      }}
-    >
-      {/* Add new work form */}
-      <section>
-        <h2
-          style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 900,
-            fontSize: "clamp(1.5rem, 4vw, 2rem)",
-            textTransform: "uppercase",
-            color: "var(--cp-text)",
-            marginBottom: "24px",
-          }}
-        >
-          ADD NEW WORK
-        </h2>
-        <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-12">
+      <section className="lg:col-span-2">
+        <h2 className="text-display text-3xl mb-6">Add new work</h2>
+        <form onSubmit={onSubmit} className="space-y-4">
           <AdminField label="Title" name="title" error={errors.title} />
           <div>
-            <label
-              style={{
-                display: "block",
-                fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                letterSpacing: "0.25em",
-                textTransform: "uppercase",
-                color: "var(--cp-muted)",
-                marginBottom: "8px",
-              }}
-            >
-              MEDIUM
+            <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block">
+              Medium
             </label>
             <select
               name="medium"
+              className="w-full bg-input border border-border px-4 py-3 focus:outline-none focus:border-foreground"
               defaultValue="charcoal"
-              className="cyber-input"
-              style={{ cursor: "pointer" }}
             >
               <option value="charcoal">Charcoal</option>
               <option value="paintings">Paintings</option>
               <option value="sketches">Sketches</option>
             </select>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <div className="grid grid-cols-2 gap-4">
             <AdminField
               label="Year"
               name="year"
@@ -170,7 +141,7 @@ export function ArtworkManager({
               defaultValue="2025"
               error={errors.year}
             />
-            <AdminField label="Price (₹)" name="price" type="number" error={errors.price} />
+            <AdminField label="Price (USD)" name="price" type="number" error={errors.price} />
           </div>
           <AdminField
             label='Dimensions (e.g. 24" × 30")'
@@ -178,66 +149,30 @@ export function ArtworkManager({
             error={errors.dimensions}
           />
           <div>
-            <label
-              style={{
-                display: "block",
-                fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                letterSpacing: "0.25em",
-                textTransform: "uppercase",
-                color: "var(--cp-muted)",
-                marginBottom: "8px",
-              }}
-            >
-              IMAGES <span style={{ opacity: 0.6, textTransform: "none" }}>(select multiple)</span>
+            <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block">
+              Images <span className="normal-case opacity-60">(select multiple)</span>
             </label>
             <input
               type="file"
               accept="image/*"
               multiple
               onChange={onImage}
-              style={{
-                width: "100%",
-                fontFamily: "var(--font-mono)",
-                fontSize: "11px",
-                color: "var(--cp-muted)",
-              }}
+              className="w-full text-xs file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-foreground file:text-background file:uppercase file:tracking-widest file:text-[10px] file:cursor-pointer"
             />
             {imagePreviews.length > 0 && (
               <div
-                style={{
-                  marginTop: "12px",
-                  display: "grid",
-                  gridTemplateColumns: imagePreviews.length === 1 ? "1fr" : "1fr 1fr",
-                  gap: "8px",
-                }}
+                className={`mt-3 grid gap-2 ${
+                  imagePreviews.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                }`}
               >
                 {imagePreviews.map((src, i) => (
-                  <div key={i} style={{ position: "relative" }}>
+                  <div key={i} className="relative group">
                     <img
                       src={src}
                       alt={`preview ${i + 1}`}
-                      style={{
-                        width: "100%",
-                        aspectRatio: "1",
-                        objectFit: "cover",
-                        border: "1px solid rgba(245,240,0,0.2)",
-                      }}
+                      className="w-full aspect-square object-cover border border-border"
                     />
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: "4px",
-                        left: "4px",
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "8px",
-                        letterSpacing: "0.15em",
-                        textTransform: "uppercase",
-                        background: "rgba(12,14,10,0.8)",
-                        color: "var(--cp-muted)",
-                        padding: "2px 6px",
-                      }}
-                    >
+                    <span className="absolute top-1 left-1 text-[9px] uppercase tracking-widest bg-background/80 px-1.5 py-0.5 text-muted-foreground">
                       {i + 1}/{imagePreviews.length}
                     </span>
                     <button
@@ -248,21 +183,7 @@ export function ArtworkManager({
                         setImageFiles(newFiles);
                         setImagePreviews(newPreviews);
                       }}
-                      style={{
-                        position: "absolute",
-                        top: "4px",
-                        right: "4px",
-                        width: "20px",
-                        height: "20px",
-                        background: "rgba(12,14,10,0.8)",
-                        color: "var(--cp-red)",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
+                      className="absolute top-1 right-1 w-5 h-5 bg-background/80 text-foreground text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ×
                     </button>
@@ -270,182 +191,53 @@ export function ArtworkManager({
                 ))}
               </div>
             )}
-            {errors.image && (
-              <p
-                style={{
-                  marginTop: "8px",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "9px",
-                  letterSpacing: "0.15em",
-                  color: "var(--cp-red)",
-                  textTransform: "uppercase",
-                }}
-              >
-                // {errors.image}
-              </p>
-            )}
+            {errors.image && <p className="mt-2 text-xs text-destructive">{errors.image}</p>}
           </div>
           <div>
-            <label
-              style={{
-                display: "block",
-                fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                letterSpacing: "0.25em",
-                textTransform: "uppercase",
-                color: "var(--cp-muted)",
-                marginBottom: "8px",
-              }}
-            >
-              DESCRIPTION
+            <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block">
+              Description
             </label>
             <textarea
               name="description"
               rows={4}
-              className="cyber-input"
-              style={{ resize: "none", fontFamily: "var(--font-mono)", lineHeight: 1.8 }}
+              className="w-full bg-input border border-border px-4 py-3 focus:outline-none focus:border-foreground resize-none"
             />
             {errors.description && (
-              <p
-                style={{
-                  marginTop: "8px",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "9px",
-                  letterSpacing: "0.15em",
-                  color: "var(--cp-red)",
-                  textTransform: "uppercase",
-                }}
-              >
-                // {errors.description}
-              </p>
+              <p className="mt-2 text-xs text-destructive">{errors.description}</p>
             )}
           </div>
-          {errors.submit && (
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                letterSpacing: "0.15em",
-                color: "var(--cp-red)",
-                textTransform: "uppercase",
-              }}
-            >
-              // ERROR: {errors.submit}
-            </p>
-          )}
+          {errors.submit && <p className="text-xs text-destructive">{errors.submit}</p>}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="cyber-btn"
-            style={{ width: "100%", justifyContent: "center", opacity: isSubmitting ? 0.5 : 1 }}
+            className="w-full px-6 py-3 bg-primary text-primary-foreground text-xs uppercase tracking-[0.25em] hover:bg-primary/90 disabled:opacity-50"
           >
-            {isSubmitting ? "UPLOADING & PUBLISHING..." : "PUBLISH WORK →"}
+            {isSubmitting ? "Uploading image & publishing..." : "Publish work"}
           </button>
         </form>
       </section>
 
-      {/* Works list */}
-      <section>
-        <h2
-          style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 900,
-            fontSize: "clamp(1.5rem, 4vw, 2rem)",
-            textTransform: "uppercase",
-            color: "var(--cp-text)",
-            marginBottom: "24px",
-          }}
-        >
-          ALL WORKS ({works.length})
-        </h2>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-            maxHeight: "70vh",
-            overflowY: "auto",
-            paddingRight: "8px",
-          }}
-        >
+      <section className="lg:col-span-3">
+        <h2 className="text-display text-3xl mb-6">All works ({works.length})</h2>
+        <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2">
           {works.map((w) => (
-            <div
-              key={w.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "16px",
-                background: "var(--cp-surface)",
-                border: "1px solid rgba(245,240,0,0.12)",
-                padding: "12px",
-              }}
-            >
+            <div key={w.id} className="flex items-center gap-4 bg-card/40 border border-border p-3">
               <img
                 src={w.image}
                 alt={w.title}
-                style={{
-                  width: "64px",
-                  height: "64px",
-                  objectFit: "cover",
-                  flexShrink: 0,
-                }}
+                className="w-16 h-16 sm:w-20 sm:h-20 object-cover shrink-0"
               />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 700,
-                    fontSize: "14px",
-                    textTransform: "uppercase",
-                    color: "var(--cp-text)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {w.title}
-                </p>
-                <p
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "9px",
-                    letterSpacing: "0.15em",
-                    textTransform: "uppercase",
-                    color: "var(--cp-muted)",
-                    marginTop: "4px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {w.medium} · {w.year} · ₹{w.price.toLocaleString()}
+              <div className="flex-1 min-w-0">
+                <p className="text-display text-lg sm:text-xl truncate">{w.title}</p>
+                <p className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground mt-0.5 truncate">
+                  {w.medium} · {w.year} · ${w.price.toLocaleString()}
                 </p>
               </div>
               <button
                 onClick={() => remove(w.id)}
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "9px",
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                  color: "var(--cp-muted)",
-                  background: "none",
-                  border: "1px solid rgba(245,240,0,0.15)",
-                  padding: "6px 12px",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                  transition: "color 0.2s ease, border-color 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.color = "var(--cp-red)";
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--cp-red)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.color = "var(--cp-muted)";
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,240,0,0.15)";
-                }}
+                className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground hover:text-destructive px-3 py-1.5 border border-border/40 sm:border-transparent hover:border-destructive/40 transition-colors shrink-0"
               >
-                DELETE
+                Delete
               </button>
             </div>
           ))}

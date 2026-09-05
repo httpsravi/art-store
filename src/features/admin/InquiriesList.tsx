@@ -50,46 +50,20 @@ export function InquiriesList({
   }
 
   return (
-    <section style={{ maxWidth: "800px" }}>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "16px",
-          marginBottom: "32px",
-        }}
-      >
-        <h2
-          style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 900,
-            fontSize: "clamp(1.5rem, 4vw, 2rem)",
-            textTransform: "uppercase",
-            color: "var(--cp-text)",
-          }}
-        >
-          INQUIRIES ({filteredInquiries.length})
-        </h2>
+    <section className="max-w-4xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <h2 className="text-display text-3xl">Studio Inquiries ({filteredInquiries.length})</h2>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+        <div className="flex flex-wrap gap-2">
           {(["all", "unread", "read"] as const).map((filter) => (
             <button
               key={filter}
               onClick={() => setInquiryFilter(filter)}
-              style={{
-                padding: "6px 12px",
-                fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                border: `1px solid ${inquiryFilter === filter ? "var(--cp-yellow)" : "rgba(245,240,0,0.2)"}`,
-                background: inquiryFilter === filter ? "var(--cp-yellow)" : "transparent",
-                color: inquiryFilter === filter ? "#0A0B09" : "var(--cp-muted)",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
+              className={`px-3 py-1 text-[10px] uppercase tracking-widest border border-border ${
+                inquiryFilter === filter
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               {filter}
             </button>
@@ -98,158 +72,60 @@ export function InquiriesList({
       </div>
 
       {filteredInquiries.length === 0 ? (
-        <div
-          style={{
-            border: "1px solid rgba(245,240,0,0.12)",
-            padding: "64px",
-            textAlign: "center",
-            background: "var(--cp-surface)",
-            fontFamily: "var(--font-mono)",
-            fontSize: "11px",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            color: "var(--cp-muted)",
-          }}
-        >
-          NO INQUIRIES MATCHING FILTER.
+        <div className="border border-border p-16 text-center bg-card/20 text-muted-foreground">
+          No inquiries matching the selected filter.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        <div className="space-y-6">
           {filteredInquiries.map((inq) => (
             <div
               key={inq._id}
-              style={{
-                border: `1px solid ${inq.read ? "rgba(245,240,0,0.1)" : "var(--cp-yellow)"}`,
-                padding: "24px",
-                background: "var(--cp-surface)",
-                transition: "all 0.2s ease",
-                opacity: inq.read ? 0.75 : 1,
-              }}
+              className={`border p-6 bg-card/30 transition-all ${
+                inq.read ? "border-border/40 opacity-75" : "border-foreground shadow-sm"
+              }`}
             >
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  gap: "16px",
-                  marginBottom: "16px",
-                }}
-              >
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                 <div>
-                  <span
-                    style={{
-                      display: "block",
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "8px",
-                      letterSpacing: "0.2em",
-                      textTransform: "uppercase",
-                      color: "var(--cp-dim)",
-                    }}
-                  >
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground block">
                     {new Date(inq.createdAt).toLocaleDateString()} at{" "}
                     {new Date(inq.createdAt).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </span>
-                  <h3
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontWeight: 700,
-                      fontSize: "18px",
-                      textTransform: "uppercase",
-                      color: "var(--cp-text)",
-                      marginTop: "4px",
-                    }}
-                  >
-                    {inq.name}
-                  </h3>
+                  <h3 className="text-xl font-medium text-foreground">{inq.name}</h3>
                   <a
                     href={`mailto:${inq.email}`}
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "11px",
-                      letterSpacing: "0.1em",
-                      color: "var(--cp-cyan)",
-                      textDecoration: "none",
-                      wordBreak: "break-all",
-                    }}
+                    className="text-xs text-muted-foreground hover:text-foreground border-b border-border/50 break-all"
                   >
                     {inq.email}
                   </a>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div className="flex items-center gap-3 self-start sm:self-auto">
                   {!inq.read && (
                     <button
                       onClick={() => handleMarkRead(inq._id)}
-                      className="cyber-btn"
-                      style={{
-                        fontSize: "9px",
-                        padding: "6px 12px",
-                        letterSpacing: "0.15em",
-                      }}
+                      className="px-3 py-1.5 bg-foreground text-background text-[10px] uppercase tracking-widest hover:bg-foreground/80 transition-colors shrink-0"
                     >
-                      MARK READ
+                      Mark Read
                     </button>
                   )}
                   <button
                     onClick={() => handleDeleteInquiry(inq._id)}
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "9px",
-                      letterSpacing: "0.2em",
-                      textTransform: "uppercase",
-                      padding: "6px 12px",
-                      border: "1px solid rgba(245,240,0,0.15)",
-                      background: "none",
-                      color: "var(--cp-muted)",
-                      cursor: "pointer",
-                      transition: "color 0.2s ease, border-color 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.color = "var(--cp-red)";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--cp-red)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.color = "var(--cp-muted)";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,240,0,0.15)";
-                    }}
+                    className="px-3 py-1.5 border border-border text-[10px] sm:text-xs uppercase tracking-widest hover:text-destructive hover:border-destructive/50 transition-colors shrink-0"
                   >
-                    DELETE
+                    Delete
                   </button>
                 </div>
               </div>
 
-              <div
-                style={{
-                  borderTop: "1px solid rgba(245,240,0,0.08)",
-                  paddingTop: "16px",
-                  marginTop: "8px",
-                }}
-              >
+              <div className="border-t border-border/40 pt-4 mt-2">
                 {inq.subject && (
-                  <p
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      color: "var(--cp-text)",
-                      marginBottom: "8px",
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    SUBJECT: {inq.subject}
+                  <p className="text-sm font-semibold mb-2 text-foreground">
+                    Subject: {inq.subject}
                   </p>
                 )}
-                <p
-                  style={{
-                    fontSize: "13px",
-                    color: "var(--cp-muted)",
-                    lineHeight: 1.7,
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
+                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                   {inq.message}
                 </p>
               </div>

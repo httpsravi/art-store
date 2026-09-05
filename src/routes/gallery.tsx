@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { z } from "zod";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -7,6 +7,7 @@ import { MEDIUMS, fetchArtworks } from "@/services";
 import { type Artwork } from "@/types/artwork";
 import { PLACEHOLDER_WORKS } from "@/constants/placeholders";
 import { ArtworkCard } from "@/components/common/ArtworkCard";
+import { gsap } from "gsap";
 
 const searchSchema = z.object({
   medium: z.enum(["all", "charcoal", "paintings", "sketches"]).optional().catch("all"),
@@ -32,6 +33,10 @@ function Gallery() {
   const [works, setWorks] = useState<Artwork[]>([]);
   const [activeHover, setActiveHover] = useState<string | null>(null);
 
+  const headerRef = useRef<HTMLDivElement>(null);
+  const filterStripRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetchArtworks(medium as "all" | "charcoal" | "paintings" | "sketches" | undefined)
       .then((data) => {
@@ -41,6 +46,56 @@ function Gallery() {
         setWorks(PLACEHOLDER_WORKS);
       });
   }, [medium]);
+
+  // Gallery Header GSAP Entrance
+  useEffect(() => {
+    if (typeof window === "undefined" || !headerRef.current) return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      tl.fromTo(
+        ".gallery-header-item",
+        { opacity: 0, y: 30, skewY: 2 },
+        { opacity: 1, y: 0, skewY: 0, duration: 0.8, stagger: 0.12, ease: "back.out(1.4)" }
+      ).fromTo(
+        filterStripRef.current,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.5 },
+        "-=0.3"
+      );
+    }, headerRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  // Grid Refilter Stagger Animation on Medium Change
+  useEffect(() => {
+    if (typeof window === "undefined" || !gridRef.current) return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
+    const ctx = gsap.context(() => {
+      if (gridRef.current && gridRef.current.children.length > 0) {
+        gsap.fromTo(
+          gridRef.current.children,
+          { opacity: 0, scale: 0.9, y: 30 },
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.5,
+            stagger: 0.07,
+            ease: "back.out(1.5)",
+          }
+        );
+      }
+    }, gridRef);
+
+    return () => ctx.revert();
+  }, [medium, works]);
 
   const filtered =
     medium && medium !== "all" ? works.filter((a) => a.medium === medium) : works;
@@ -52,6 +107,7 @@ function Gallery() {
       <main style={{ paddingTop: "80px", paddingBottom: "80px" }}>
         {/* ─── HEADER ─── */}
         <div
+          ref={headerRef}
           style={{
             maxWidth: "1280px",
             margin: "0 auto",
@@ -61,25 +117,27 @@ function Gallery() {
         >
           {/* Section Indicator Badge */}
           <div
+            className="gallery-header-item"
             style={{
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              background: "rgba(245,240,0,0.08)",
-              border: "1px solid rgba(245,240,0,0.25)",
-              padding: "4px 10px",
-              marginBottom: "16px",
+              background: "#F5E000",
+              border: "2px solid #0B0C10",
+              boxShadow: "3px 3px 0px #0B0C10",
+              padding: "6px 14px",
+              marginBottom: "20px",
             }}
           >
-            <span style={{ width: "6px", height: "6px", background: "var(--cp-yellow)", borderRadius: "50%", display: "inline-block" }} />
+            <span style={{ width: "8px", height: "8px", background: "#0B0C10", borderRadius: "50%", display: "inline-block" }} />
             <span
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "9px",
+                fontSize: "10px",
                 letterSpacing: "0.2em",
-                color: "var(--cp-yellow)",
+                color: "#0B0C10",
                 textTransform: "uppercase",
-                fontWeight: 700,
+                fontWeight: 900,
               }}
             >
               ARCHIVE // COLLECTION 2049
@@ -88,6 +146,7 @@ function Gallery() {
 
           {/* Title & Description Layout */}
           <div
+            className="gallery-header-item"
             style={{
               display: "flex",
               flexDirection: "column",
@@ -102,20 +161,21 @@ function Gallery() {
                 fontSize: "clamp(2.8rem, 10vw, 8rem)",
                 textTransform: "uppercase",
                 lineHeight: 0.9,
-                color: "var(--cp-text)",
+                color: "#0B0C10",
                 margin: 0,
                 letterSpacing: "-0.01em",
               }}
             >
-              ARTWORK <span style={{ color: "var(--cp-yellow)", textShadow: "0 0 30px rgba(245,240,0,0.2)" }}>GALLERY.</span>
+              ARTWORK <span style={{ color: "#E6B800" }}>GALLERY.</span>
             </h1>
             <p
               style={{
-                fontSize: "13px",
-                color: "var(--cp-muted)",
+                fontSize: "14px",
+                color: "#4A4D58",
                 lineHeight: 1.6,
                 maxWidth: "540px",
                 margin: 0,
+                fontWeight: 500,
               }}
             >
               Original 1-of-1 physical artworks. Each piece is signed, certificate verified, and shipped in custom archival packaging.
@@ -124,14 +184,16 @@ function Gallery() {
 
           {/* ─── MOBILE FILTER TABS & WORK COUNTER BAR ─── */}
           <div
+            ref={filterStripRef}
             style={{
-              borderTop: "1px solid rgba(245,240,0,0.15)",
-              borderBottom: "1px solid rgba(245,240,0,0.15)",
-              padding: "12px 0",
+              borderTop: "2px solid #0B0C10",
+              borderBottom: "2px solid #0B0C10",
+              padding: "16px 0",
               marginBottom: "32px",
               display: "flex",
               flexDirection: "column",
-              gap: "12px",
+              gap: "16px",
+              background: "#FFFFFF",
             }}
           >
             {/* Filter Tabs Scroll Container */}
@@ -139,7 +201,7 @@ function Gallery() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "8px",
+                gap: "12px",
                 overflowX: "auto",
                 WebkitOverflowScrolling: "touch",
                 paddingBottom: "4px",
@@ -160,22 +222,23 @@ function Gallery() {
                     onMouseLeave={() => setActiveHover(null)}
                     style={{
                       fontFamily: "var(--font-mono)",
-                      fontSize: "10px",
+                      fontSize: "11px",
+                      fontWeight: 800,
                       letterSpacing: "0.15em",
                       textTransform: "uppercase",
-                      padding: "8px 14px",
+                      padding: "10px 18px",
                       textDecoration: "none",
                       whiteSpace: "nowrap",
                       flexShrink: 0,
                       transition: "all 0.2s ease",
                       background: active
-                        ? "var(--cp-yellow)"
+                        ? "#0B0C10"
                         : hovered
-                        ? "rgba(245,240,0,0.1)"
-                        : "rgba(18,21,16,0.6)",
-                      color: active ? "#0A0B09" : hovered ? "var(--cp-yellow)" : "var(--cp-muted)",
-                      border: `1px solid ${active ? "var(--cp-yellow)" : "rgba(245,240,0,0.2)"}`,
-                      fontWeight: active ? 700 : 400,
+                        ? "#F5E000"
+                        : "#F1F3F9",
+                      color: active ? "#FFFFFF" : "#0B0C10",
+                      border: "2px solid #0B0C10",
+                      boxShadow: active ? "4px 4px 0px #E6B800" : "none",
                     }}
                   >
                     {m.label}
@@ -190,28 +253,30 @@ function Gallery() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingTop: "6px",
-                borderTop: "1px dashed rgba(245,240,0,0.1)",
+                paddingTop: "10px",
+                borderTop: "1px dashed rgba(11,12,16,0.15)",
               }}
             >
               <span
                 style={{
                   fontFamily: "var(--font-mono)",
-                  fontSize: "9px",
+                  fontSize: "10px",
+                  fontWeight: 800,
                   letterSpacing: "0.2em",
                   textTransform: "uppercase",
-                  color: "var(--cp-dim)",
+                  color: "#4A4D58",
                 }}
               >
                 FILTER // {medium.toUpperCase()}
               </span>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span
                   style={{
                     fontFamily: "var(--font-mono)",
-                    fontSize: "9px",
+                    fontSize: "10px",
+                    fontWeight: 700,
                     letterSpacing: "0.15em",
-                    color: "var(--cp-muted)",
+                    color: "#4A4D58",
                   }}
                 >
                   TOTAL:
@@ -220,8 +285,11 @@ function Gallery() {
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 900,
-                    fontSize: "16px",
-                    color: "var(--cp-yellow)",
+                    fontSize: "18px",
+                    color: "#0B0C10",
+                    background: "#F5E000",
+                    padding: "2px 8px",
+                    border: "1px solid #0B0C10",
                     lineHeight: 1,
                   }}
                 >
@@ -245,18 +313,20 @@ function Gallery() {
               style={{
                 textAlign: "center",
                 padding: "80px 20px",
-                border: "1px solid rgba(245,240,0,0.15)",
-                background: "var(--cp-surface)",
+                border: "2px solid #0B0C10",
+                background: "#FFFFFF",
+                boxShadow: "6px 6px 0px #0B0C10",
               }}
             >
               <p
                 style={{
                   fontFamily: "var(--font-mono)",
-                  fontSize: "11px",
+                  fontSize: "12px",
+                  fontWeight: 800,
                   letterSpacing: "0.2em",
                   textTransform: "uppercase",
-                  color: "var(--cp-muted)",
-                  marginBottom: "16px",
+                  color: "#0B0C10",
+                  marginBottom: "20px",
                 }}
               >
                 // NO ARTWORKS FOUND IN THIS CATEGORY.
@@ -267,10 +337,11 @@ function Gallery() {
             </div>
           ) : (
             <div
+              ref={gridRef}
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
-                gap: "16px",
+                gap: "20px",
               }}
             >
               {filtered.map((a, i) => (

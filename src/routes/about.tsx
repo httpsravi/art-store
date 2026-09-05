@@ -6,10 +6,10 @@ import artistPortrait from "@/assets/artist_portrait.png";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "Artist Profile // Ravitej" },
+      { title: "About — Ravitej" },
       {
         name: "description",
-        content: "About Ravitej — 19-year-old artist with over 7 years of experience in charcoal, oil, and graphite.",
+        content: "About Ravitej — artist working in charcoal, oil, and graphite.",
       },
     ],
   }),
@@ -18,370 +18,130 @@ export const Route = createFileRoute("/about")({
 
 function About() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--cp-bg)", overflowX: "hidden" }}>
+    <div className="min-h-screen">
       <Navbar />
-
-      <main
-        style={{
-          paddingTop: "80px",
-          paddingBottom: "80px",
-          maxWidth: "1280px",
-          margin: "0 auto",
-          padding: "80px 16px 80px",
-        }}
-      >
-        {/* ─── HEADER ─── */}
-        <div style={{ marginBottom: "36px" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              background: "rgba(245,240,0,0.08)",
-              border: "1px solid rgba(245,240,0,0.25)",
-              padding: "4px 10px",
-              marginBottom: "12px",
-            }}
-          >
-            <span style={{ width: "6px", height: "6px", background: "var(--cp-yellow)", borderRadius: "50%", display: "inline-block" }} />
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                letterSpacing: "0.2em",
-                color: "var(--cp-yellow)",
-                textTransform: "uppercase",
-                fontWeight: 700,
-              }}
-            >
-              ARTIST // DOSSIER
-            </span>
+      <main className="pt-28 sm:pt-32 pb-20 max-w-5xl mx-auto px-5 sm:px-8 lg:px-12">
+        {/* Hero section: portrait + headline side by side on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-16 lg:mb-24">
+          {/* Text side */}
+          <div className="order-2 lg:order-1">
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-5">
+              — The artist
+            </p>
+            <h1 className="text-display text-6xl sm:text-7xl lg:text-8xl xl:text-9xl leading-none mb-8 lg:mb-12">
+              Ravitej.
+            </h1>
+            <div className="space-y-6 text-base sm:text-lg leading-relaxed text-foreground/80 max-w-xl">
+              <p>
+                Hey, I'm Ravitej — a 19-year-old artist with over 7 years of experience bringing
+                ideas to life through art. What began as a simple hobby turned into something
+                bigger. I've created and sold custom paintings and hoodies, with a few even reaching
+                the USA.
+              </p>
+              <p>
+                I love drawing and painting portraits, anime, and customised pieces that reflect
+                emotion and personality. My style mixes calm and chaos — clean lines with a hint of
+                rebellion.
+              </p>
+              <p>
+                I don't aim for perfect art. I aim for art that feels <em>alive</em>.
+              </p>
+            </div>
           </div>
 
-          <h1
-            style={{
-              fontFamily: "var(--font-display)",
-              fontWeight: 900,
-              fontSize: "clamp(2.8rem, 10vw, 8rem)",
-              textTransform: "uppercase",
-              lineHeight: 0.9,
-              color: "var(--cp-text)",
-              margin: 0,
-              letterSpacing: "-0.01em",
-            }}
-          >
-            RAVITEJ <span style={{ color: "var(--cp-yellow)", textShadow: "0 0 30px rgba(245,240,0,0.2)" }}>DAVINCI.</span>
-          </h1>
-        </div>
-
-        {/* ─── PORTRAIT ON TOP FOR MOBILE / BALANCED ON DESKTOP ─── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
-            gap: "36px",
-            alignItems: "start",
-            marginBottom: "64px",
-          }}
-        >
-          {/* Portrait Container — Smaller Compact Size */}
-          <div
-            style={{
-              position: "relative",
-              maxWidth: "220px",
-              margin: "0 auto 12px",
-              width: "100%",
-            }}
-          >
-            {/* HUD Corner Brackets */}
-            <div
-              style={{
-                position: "absolute",
-                top: "-6px",
-                left: "-6px",
-                width: "18px",
-                height: "18px",
-                borderTop: "2px solid var(--cp-yellow)",
-                borderLeft: "2px solid var(--cp-yellow)",
-                zIndex: 2,
-                pointerEvents: "none",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                bottom: "-6px",
-                right: "-6px",
-                width: "18px",
-                height: "18px",
-                borderBottom: "2px solid var(--cp-cyan)",
-                borderRight: "2px solid var(--cp-cyan)",
-                zIndex: 2,
-                pointerEvents: "none",
-              }}
-            />
-
-            {/* Portrait Image Frame */}
-            <div
-              style={{
-                aspectRatio: "4/5",
-                maxHeight: "250px",
-                overflow: "hidden",
-                border: "1px solid rgba(245,240,0,0.3)",
-                background: "var(--cp-surface)",
-                position: "relative",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
-              }}
-            >
-              <img
-                src={artistPortrait}
-                alt="Ravitej — artist portrait"
+          {/* Portrait side */}
+          <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-xs sm:max-w-sm lg:max-w-md">
+              {/* Decorative frame lines */}
+              <div
+                className="absolute -top-3 -left-3 w-16 h-16 pointer-events-none"
                 style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  objectPosition: "top",
+                  borderTop: "1px solid rgba(255,255,255,0.25)",
+                  borderLeft: "1px solid rgba(255,255,255,0.25)",
                 }}
               />
               <div
+                className="absolute -bottom-3 -right-3 w-16 h-16 pointer-events-none"
                 style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: "40%",
-                  background: "linear-gradient(to top, rgba(10,12,8,0.85), transparent)",
-                  pointerEvents: "none",
+                  borderBottom: "1px solid rgba(255,255,255,0.25)",
+                  borderRight: "1px solid rgba(255,255,255,0.25)",
                 }}
               />
 
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "12px",
-                  left: "12px",
-                  right: "12px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  zIndex: 2,
-                }}
-              >
-                <span
+              {/* Main portrait */}
+              <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
+                <img
+                  src={artistPortrait}
+                  alt="Ravitej — artist portrait"
+                  className="w-full h-full object-cover object-top"
+                  style={{ filter: "contrast(1.05) brightness(0.96)" }}
+                />
+                {/* Subtle gradient overlay at bottom */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-1/4"
                   style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "8px",
-                    letterSpacing: "0.2em",
-                    textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.7)",
+                    background: "linear-gradient(to top, rgba(6,6,6,0.6), transparent)",
                   }}
-                >
-                  RAVITEJ · INDIA
-                </span>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "8px",
-                    letterSpacing: "0.15em",
-                    textTransform: "uppercase",
-                    color: "var(--cp-yellow)",
-                    fontWeight: 700,
-                  }}
-                >
-                  VERIFIED // 001
-                </span>
+                />
               </div>
-            </div>
-          </div>
 
-          {/* Artist Bio & Technical Readout */}
-          <div>
-            <div
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                letterSpacing: "0.25em",
-                textTransform: "uppercase",
-                color: "var(--cp-yellow)",
-                marginBottom: "16px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <span style={{ width: "16px", height: "1px", background: "var(--cp-yellow)", display: "inline-block", opacity: 0.6 }} />
-              ARTIST STATEMENT
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                marginBottom: "32px",
-              }}
-            >
-              <p style={{ fontSize: "14px", color: "var(--cp-text)", lineHeight: 1.7, margin: 0 }}>
-                Hey, I'm Ravitej — a 19-year-old artist with over 7 years of dedicated practice bringing ideas to life through charcoal, graphite, and oil paint.
-              </p>
-              <p style={{ fontSize: "13.5px", color: "var(--cp-muted)", lineHeight: 1.7, margin: 0 }}>
-                What began as an obsessive childhood hobby evolved into a global studio. My custom paintings and garments have reached collectors across India and the USA.
-              </p>
-              <p style={{ fontSize: "13.5px", color: "var(--cp-muted)", lineHeight: 1.7, margin: 0 }}>
-                My work balances raw charcoal marks with fine detail — portraits, anime icons, and customized pieces infused with rebellious cyber energy.
-              </p>
-            </div>
-
-            {/* Mobile Professional Telemetry Box */}
-            <div
-              style={{
-                border: "1px solid rgba(245,240,0,0.2)",
-                background: "rgba(18,21,16,0.85)",
-              }}
-            >
+              {/* Caption badge */}
               <div
-                style={{
-                  borderBottom: "1px solid rgba(245,240,0,0.12)",
-                  padding: "10px 14px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
+                className="absolute bottom-4 left-4 right-4 flex items-center justify-between"
+                style={{ zIndex: 10 }}
               >
                 <span
                   style={{
-                    fontFamily: "var(--font-mono)",
+                    fontSize: "9px",
+                    letterSpacing: "0.25em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.5)",
+                  }}
+                >
+                  Ravitej · Studio, India
+                </span>
+                <span
+                  style={{
                     fontSize: "9px",
                     letterSpacing: "0.2em",
-                    color: "var(--cp-yellow)",
                     textTransform: "uppercase",
-                    fontWeight: 700,
+                    color: "rgba(255,255,255,0.3)",
                   }}
                 >
-                  PROFILE // TELEMETRY
-                </span>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "8px",
-                    color: "var(--cp-green)",
-                    letterSpacing: "0.15em",
-                  }}
-                >
-                  ● ONLINE
+                  2025
                 </span>
               </div>
-
-              {[
-                { key: "STUDIO", value: "Karnataka, India" },
-                { key: "PRACTICE", value: "7+ Years (Est. 2017)" },
-                { key: "SHIPPING", value: "Worldwide Archival Crates" },
-                { key: "COMMISSIONS", value: "OPEN FOR INQUIRIES", link: "/contact", isHighlight: true },
-                { key: "MEDIUMS", value: "Charcoal · Oil · Graphite" },
-              ].map(({ key, value, link, isHighlight }, idx) => (
-                <div
-                  key={key}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "4px",
-                    borderBottom: idx < 4 ? "1px solid rgba(245,240,0,0.08)" : "none",
-                    padding: "10px 14px",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "8.5px",
-                      letterSpacing: "0.2em",
-                      textTransform: "uppercase",
-                      color: "var(--cp-dim)",
-                    }}
-                  >
-                    {key}
-                  </span>
-                  {link ? (
-                    <Link
-                      to={link as "/contact"}
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "11px",
-                        letterSpacing: "0.1em",
-                        color: isHighlight ? "var(--cp-green)" : "var(--cp-yellow)",
-                        textDecoration: "none",
-                        textTransform: "uppercase",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {value} →
-                    </Link>
-                  ) : (
-                    <span
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "11px",
-                        letterSpacing: "0.08em",
-                        color: "var(--cp-text)",
-                      }}
-                    >
-                      {value}
-                    </span>
-                  )}
-                </div>
-              ))}
             </div>
           </div>
         </div>
 
-        {/* ─── CYBER DIVIDER ─── */}
-        <div className="yellow-strip" style={{ marginBottom: "48px" }} />
+        <div className="ink-divider mb-14 lg:mb-20" />
 
-        {/* ─── COMMISSION CTA ─── */}
-        <div
-          style={{
-            border: "1px solid rgba(245,240,0,0.25)",
-            background: "var(--cp-surface)",
-            padding: "32px 20px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "20px",
-          }}
-        >
+        {/* Stats row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12">
           <div>
-            <div className="section-label" style={{ marginBottom: "8px" }}>
-              COMMISSION PROTOCOL // DIRECT INQUIRY
-            </div>
-            <h2
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 900,
-                fontSize: "clamp(1.8rem, 6vw, 3.5rem)",
-                textTransform: "uppercase",
-                lineHeight: 0.95,
-                color: "var(--cp-text)",
-                margin: 0,
-              }}
-            >
-              READY TO COMMISSION <span style={{ color: "var(--cp-yellow)" }}>A PIECE?</span>
-            </h2>
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">Based</p>
+            <p>Studio · India</p>
           </div>
-          <Link
-            to="/contact"
-            id="about-commission-cta"
-            className="cyber-btn"
-            style={{
-              width: "100%",
-              justifyContent: "center",
-              textAlign: "center",
-              fontSize: "11px",
-              padding: "16px",
-            }}
-          >
-            START COMMISSION INQUIRY →
-          </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">Ships</p>
+            <p>Worldwide</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">
+              Commissions
+            </p>
+            <p>
+              <Link
+                to="/contact"
+                className="border-b border-foreground/40 hover:border-foreground transition-colors"
+              >
+                Open
+              </Link>
+            </p>
+          </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );

@@ -38,42 +38,22 @@ export function ImageSlider({ images, title }: ImageSliderProps) {
   // Single image — no slider chrome needed
   if (images.length === 1) {
     return (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          background: "var(--cp-surface)",
-          overflow: "hidden",
-        }}
-      >
+      <div className="w-full h-full bg-card border border-border/40 vignette overflow-hidden">
         <img
           src={images[0]}
           alt={title}
+          className="w-full h-full object-contain"
           draggable={false}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-          }}
         />
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        background: "var(--cp-surface)",
-        overflow: "hidden",
-        userSelect: "none",
-      }}
-    >
+    <div className="relative w-full h-full bg-card border border-border/40 vignette overflow-hidden select-none group">
       {/* Slides */}
       <div
-        style={{ width: "100%", height: "100%" }}
+        className="w-full h-full"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -84,13 +64,8 @@ export function ImageSlider({ images, title }: ImageSliderProps) {
             src={src}
             alt={`${title} — view ${i + 1}`}
             draggable={false}
+            className="absolute inset-0 w-full h-full object-contain transition-opacity duration-500"
             style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              transition: "opacity 0.5s ease",
               opacity: i === current ? 1 : 0,
               pointerEvents: i === current ? "auto" : "none",
             }}
@@ -102,99 +77,33 @@ export function ImageSlider({ images, title }: ImageSliderProps) {
       <button
         onClick={prev}
         aria-label="Previous image"
-        style={{
-          position: "absolute",
-          left: "12px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: "36px",
-          height: "36px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "rgba(12,14,10,0.75)",
-          backdropFilter: "blur(4px)",
-          border: "1px solid rgba(245,240,0,0.3)",
-          color: "var(--cp-yellow)",
-          cursor: "pointer",
-          fontSize: "16px",
-          transition: "background 0.2s ease, border-color 0.2s ease",
-          zIndex: 10,
-          opacity: 1,
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,240,0,0.15)";
-          (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,240,0,0.6)";
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background = "rgba(12,14,10,0.75)";
-          (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,240,0,0.3)";
-        }}
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-background/70 backdrop-blur-sm border border-border/40 text-foreground hover:bg-background/90 transition-all opacity-0 group-hover:opacity-100 z-10"
+        style={{ fontSize: "16px" }}
       >
         ‹
       </button>
       <button
         onClick={next}
         aria-label="Next image"
-        style={{
-          position: "absolute",
-          right: "12px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: "36px",
-          height: "36px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "rgba(12,14,10,0.75)",
-          backdropFilter: "blur(4px)",
-          border: "1px solid rgba(245,240,0,0.3)",
-          color: "var(--cp-yellow)",
-          cursor: "pointer",
-          fontSize: "16px",
-          transition: "background 0.2s ease, border-color 0.2s ease",
-          zIndex: 10,
-          opacity: 1,
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,240,0,0.15)";
-          (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,240,0,0.6)";
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background = "rgba(12,14,10,0.75)";
-          (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(245,240,0,0.3)";
-        }}
+        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-background/70 backdrop-blur-sm border border-border/40 text-foreground hover:bg-background/90 transition-all opacity-0 group-hover:opacity-100 z-10"
+        style={{ fontSize: "16px" }}
       >
         ›
       </button>
 
       {/* Dot indicators */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "12px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-          zIndex: 10,
-        }}
-      >
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
         {images.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrent(i)}
             aria-label={`Go to image ${i + 1}`}
+            className="transition-all duration-300"
             style={{
               width: i === current ? "20px" : "6px",
               height: "6px",
               borderRadius: "3px",
-              background: i === current ? "var(--cp-yellow)" : "rgba(245,240,0,0.3)",
-              border: "none",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              padding: 0,
+              background: i === current ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)",
             }}
           />
         ))}
@@ -202,20 +111,11 @@ export function ImageSlider({ images, title }: ImageSliderProps) {
 
       {/* Counter badge */}
       <div
+        className="absolute top-3 right-3 z-10 text-[10px] uppercase tracking-widest px-2 py-1"
         style={{
-          position: "absolute",
-          top: "12px",
-          right: "12px",
-          zIndex: 10,
-          fontFamily: "var(--font-mono)",
-          fontSize: "9px",
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-          padding: "4px 10px",
-          background: "rgba(12,14,10,0.75)",
+          background: "rgba(0,0,0,0.55)",
+          color: "rgba(255,255,255,0.7)",
           backdropFilter: "blur(4px)",
-          border: "1px solid rgba(245,240,0,0.25)",
-          color: "var(--cp-muted)",
         }}
       >
         {current + 1} / {images.length}
