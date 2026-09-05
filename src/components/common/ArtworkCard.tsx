@@ -286,6 +286,11 @@ export function ArtworkCard({ art, index = 0 }: ArtworkCardProps) {
             alt={art.title}
             loading="lazy"
             onLoad={() => setImgLoaded(true)}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src =
+                "https://images.unsplash.com/photo-1578301978693-85fa9fd0c121?w=600&q=80";
+              setImgLoaded(true);
+            }}
             style={{
               width: "100%",
               height: "100%",

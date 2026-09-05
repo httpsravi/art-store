@@ -64,6 +64,10 @@ export function ImageSlider({ images, title }: ImageSliderProps) {
             src={src}
             alt={`${title} — view ${i + 1}`}
             draggable={false}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src =
+                "https://images.unsplash.com/photo-1578301978693-85fa9fd0c121?w=600&q=80";
+            }}
             className="absolute inset-0 w-full h-full object-contain transition-opacity duration-500"
             style={{
               opacity: i === current ? 1 : 0,

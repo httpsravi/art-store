@@ -88,14 +88,15 @@ export function ArtworkManager({
 
     try {
       const newWork = await createArtwork(formData, token);
-      setWorks([newWork, ...works]);
+      // Refresh artwork list with latest data from service
+      setWorks([newWork, ...works.filter((w) => w.id !== newWork.id)]);
       setImagePreviews([]);
       setImageFiles([]);
       (e.target as HTMLFormElement).reset();
       alert("Artwork published successfully!");
     } catch (err: any) {
-      console.error(err);
-      setErrors({ submit: err.message || "Failed to publish artwork" });
+      console.error("Artwork publish error:", err);
+      setErrors({ submit: err.message || "Failed to publish artwork. Please check image upload." });
     } finally {
       setIsSubmitting(false);
     }
@@ -108,7 +109,7 @@ export function ArtworkManager({
       await deleteArtwork(id, token);
       setWorks(works.filter((w) => w.id !== id));
     } catch (err: any) {
-      console.error(err);
+      console.error("Delete artwork error:", err);
       alert(err.message || "Failed to delete artwork");
     }
   }

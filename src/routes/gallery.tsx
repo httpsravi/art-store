@@ -31,6 +31,8 @@ export const Route = createFileRoute("/gallery")({
 function Gallery() {
   const { medium = "all" } = Route.useSearch();
   const [works, setWorks] = useState<Artwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [activeHover, setActiveHover] = useState<string | null>(null);
 
   const headerRef = useRef<HTMLDivElement>(null);
@@ -38,13 +40,28 @@ function Gallery() {
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let mounted = true;
+    setIsLoading(true);
+    setFetchError(null);
+
     fetchArtworks(medium as "all" | "charcoal" | "paintings" | "sketches" | undefined)
       .then((data) => {
-        setWorks(data.length > 0 ? data : PLACEHOLDER_WORKS);
+        if (mounted) {
+          setWorks(data);
+          setIsLoading(false);
+        }
       })
-      .catch(() => {
-        setWorks(PLACEHOLDER_WORKS);
+      .catch((err) => {
+        if (mounted) {
+          console.error("Failed to load gallery artworks:", err);
+          setFetchError(err.message || "Failed to load artworks");
+          setIsLoading(false);
+        }
       });
+
+    return () => {
+      mounted = false;
+    };
   }, [medium]);
 
   // Gallery Header GSAP Entrance
@@ -300,7 +317,7 @@ function Gallery() {
           </div>
         </div>
 
-        {/* ─── ARTWORK GRID ─── */}
+        {/* ─── ARTWORK GRID / LOADING / ERROR / EMPTY ─── */}
         <div
           style={{
             maxWidth: "1280px",
@@ -308,7 +325,97 @@ function Gallery() {
             padding: "0 16px",
           }}
         >
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
+                gap: "20px",
+              }}
+            >
+              {[1, 2, 3, 4, 5, 6].map((idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: "#FFFFFF",
+                    border: "2px solid #0B0C10",
+                    padding: "16px",
+                    aspectRatio: "4/5",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(90deg, #F8F9FC 0%, #E4E7F0 50%, #F8F9FC 100%)",
+                      backgroundSize: "200% 100%",
+                      animation: "shimmer 1.5s infinite",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "relative",
+                      zIndex: 2,
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "10px",
+                      color: "#0B0C10",
+                      fontWeight: 800,
+                    }}
+                  >
+                    // LOADING ARCHIVE #{idx}...
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : fetchError ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "80px 20px",
+                border: "2px solid #0B0C10",
+                background: "#FFFFFF",
+                boxShadow: "6px 6px 0px #0B0C10",
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "12px",
+                  fontWeight: 800,
+                  color: "#E60039",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  marginBottom: "20px",
+                }}
+              >
+                // ERROR LOADING GALLERY: {fetchError}
+              </p>
+              <button
+                onClick={() => {
+                  setIsLoading(true);
+                  setFetchError(null);
+                  fetchArtworks(medium as any)
+                    .then((data) => {
+                      setWorks(data);
+                      setIsLoading(false);
+                    })
+                    .catch((err) => {
+                      setFetchError(err.message || "Failed to load artworks");
+                      setIsLoading(false);
+                    });
+                }}
+                className="cyber-btn"
+                style={{ display: "inline-flex" }}
+              >
+                RETRY ARCHIVE FETCH →
+              </button>
+            </div>
+          ) : filtered.length === 0 ? (
             <div
               style={{
                 textAlign: "center",

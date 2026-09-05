@@ -35,6 +35,8 @@ const MEDIUM_META: Record<string, { index: string; tag: string; description: str
 
 function Home() {
   const [works, setWorks] = useState<Artwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const heroRef = useRef<HTMLDivElement>(null);
   const heroPillsRef = useRef<HTMLDivElement>(null);
@@ -42,7 +44,6 @@ function Home() {
   const line2Ref = useRef<HTMLSpanElement>(null);
   const heroDescRef = useRef<HTMLDivElement>(null);
   const heroBtnsRef = useRef<HTMLDivElement>(null);
-  const heroHudRef = useRef<HTMLDivElement>(null);
   const orb1Ref = useRef<HTMLDivElement>(null);
   const orb2Ref = useRef<HTMLDivElement>(null);
   const spinRingRef = useRef<HTMLDivElement>(null);
@@ -54,13 +55,28 @@ function Home() {
   const commissionCtaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let mounted = true;
+    setIsLoading(true);
+    setFetchError(null);
+
     fetchArtworks()
       .then((data) => {
-        setWorks(data.length > 0 ? data : PLACEHOLDER_WORKS);
+        if (mounted) {
+          setWorks(data);
+          setIsLoading(false);
+        }
       })
-      .catch(() => {
-        setWorks(PLACEHOLDER_WORKS);
+      .catch((err) => {
+        if (mounted) {
+          console.error("Failed to load artworks for Home:", err);
+          setFetchError(err.message || "Failed to load artworks");
+          setIsLoading(false);
+        }
       });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Coordinated CRAZY GSAP Hero Entrance Timeline & ScrollTriggers
@@ -101,12 +117,6 @@ function Home() {
           { opacity: 0, y: 30, scale: 0.9 },
           { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.15, ease: "back.out(1.7)" },
           "-=0.4"
-        )
-        .fromTo(
-          heroHudRef.current,
-          { opacity: 0, scale: 0.5 },
-          { opacity: 1, scale: 1, duration: 0.8 },
-          "-=0.5"
         );
 
       // Continuous Slow Rotation Ring
@@ -749,18 +759,133 @@ function Home() {
           </Link>
         </div>
 
-        {/* Artwork Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
-            gap: "20px",
-          }}
-        >
-          {featured.map((a, i) => (
-            <ArtworkCard key={a.id} art={a} index={i} />
-          ))}
-        </div>
+        {/* Artwork Grid / Loading / Error / Empty states */}
+        {isLoading ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
+              gap: "20px",
+            }}
+          >
+            {[1, 2, 3, 4, 5, 6].map((idx) => (
+              <div
+                key={idx}
+                style={{
+                  background: "#FFFFFF",
+                  border: "2px solid #0B0C10",
+                  padding: "16px",
+                  aspectRatio: "4/5",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "linear-gradient(90deg, #F8F9FC 0%, #E4E7F0 50%, #F8F9FC 100%)",
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 1.5s infinite",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "relative",
+                    zIndex: 2,
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "10px",
+                    color: "#0B0C10",
+                    fontWeight: 800,
+                  }}
+                >
+                  // LOADING ARTWORK #{idx}...
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : fetchError ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 20px",
+              border: "2px solid #0B0C10",
+              background: "#FFFFFF",
+              boxShadow: "6px 6px 0px #0B0C10",
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "12px",
+                fontWeight: 800,
+                color: "#E60039",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                marginBottom: "12px",
+              }}
+            >
+              // ERROR FETCHING ARTWORKS: {fetchError}
+            </p>
+            <button
+              onClick={() => {
+                setIsLoading(true);
+                setFetchError(null);
+                fetchArtworks()
+                  .then((data) => {
+                    setWorks(data);
+                    setIsLoading(false);
+                  })
+                  .catch((err) => {
+                    setFetchError(err.message || "Failed to load artworks");
+                    setIsLoading(false);
+                  });
+              }}
+              className="cyber-btn"
+              style={{ display: "inline-flex" }}
+            >
+              RETRY TRANSMISSION →
+            </button>
+          </div>
+        ) : featured.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 20px",
+              border: "2px solid #0B0C10",
+              background: "#FFFFFF",
+              boxShadow: "6px 6px 0px #0B0C10",
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "12px",
+                fontWeight: 800,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "#0B0C10",
+              }}
+            >
+              // NO ARTWORKS AVAILABLE IN ARCHIVE.
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
+              gap: "20px",
+            }}
+          >
+            {featured.map((a, i) => (
+              <ArtworkCard key={a.id} art={a} index={i} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ═══════════════════════════════════════

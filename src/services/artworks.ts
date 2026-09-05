@@ -80,41 +80,98 @@ export const DEFAULT_ARTWORKS: Artwork[] = [
 
 const ARTWORKS_STORAGE_KEY = "ravi_artworks_v1";
 
-async function getArtworksAsync(medium?: string, token?: string): Promise<Artwork[]> {
-  if (isCloudConfigured && supabase) {
-    try {
-      const { data, error } = await supabase
-        .from("artworks")
-        .select("*")
-        .order("created_at", { ascending: false });
+/**
+ * Normalizes an image string or storage path into a fully qualified browser URL.
+ */
+export function resolveImageUrl(imgStr: string): string {
+  if (!imgStr) return "https://images.unsplash.com/photo-1578301978693-85fa9fd0c121?w=600&q=80";
 
-      if (!error && data && data.length > 0) {
-        return data.map((item: any) => {
-          let parsedImages = [item.image];
-          if (item.image && item.image.startsWith("[")) {
-            try {
-              parsedImages = JSON.parse(item.image);
-            } catch (e) {}
-          }
-          return {
-            id: String(item.id),
-            title: item.title,
-            medium: item.medium as Medium,
-            year: Number(item.year),
-            dimensions: item.dimensions,
-            price: Number(item.price),
-            image: parsedImages[0] || item.image,
-            images: parsedImages,
-            description: item.description,
-            created_at: item.created_at,
-          };
-        });
-      }
-    } catch (err) {
-      console.warn("Supabase fetch failed, falling back to local dataset:", err);
+  // If already absolute HTTP/HTTPS or data URL
+  if (imgStr.startsWith("http://") || imgStr.startsWith("https://") || imgStr.startsWith("data:")) {
+    return imgStr;
+  }
+
+  // If it's a Supabase storage path or relative path
+  if (isCloudConfigured && supabase) {
+    const cleanPath = imgStr.startsWith("artworks/") ? imgStr.replace(/^artworks\//, "") : imgStr;
+    const { data } = supabase.storage.from("artworks").getPublicUrl(cleanPath);
+    if (data?.publicUrl) {
+      return data.publicUrl;
     }
   }
-  return getStoredArtworks();
+
+  return imgStr;
+}
+
+/**
+ * Normalizes DB artwork item into a strongly typed Artwork object with resolved image URLs.
+ */
+function mapDbRecordToArtwork(item: any): Artwork {
+  let rawImages: string[] = [];
+
+  if (Array.isArray(item.images) && item.images.length > 0) {
+    rawImages = item.images;
+  } else if (typeof item.image === "string" && item.image.trim().length > 0) {
+    const trimmed = item.image.trim();
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) rawImages = parsed;
+      } catch (e) {
+        rawImages = [trimmed];
+      }
+    } else {
+      rawImages = [trimmed];
+    }
+  }
+
+  const resolvedImages = rawImages.map((src) => resolveImageUrl(src)).filter(Boolean);
+  if (resolvedImages.length === 0) {
+    resolvedImages.push("https://images.unsplash.com/photo-1578301978693-85fa9fd0c121?w=600&q=80");
+  }
+
+  return {
+    id: String(item.id),
+    title: item.title || "Untitled Artwork",
+    medium: (item.medium || "charcoal") as Medium,
+    year: Number(item.year) || new Date().getFullYear(),
+    dimensions: item.dimensions || "N/A",
+    price: Number(item.price) || 0,
+    image: resolvedImages[0],
+    images: resolvedImages,
+    description: item.description || "",
+    created_at: item.created_at,
+  };
+}
+
+async function getArtworksAsync(medium?: string): Promise<Artwork[]> {
+  if (isCloudConfigured && supabase) {
+    try {
+      let query = supabase.from("artworks").select("*").order("created_at", { ascending: false });
+      if (medium && medium !== "all") {
+        query = query.eq("medium", medium);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Supabase fetch artworks error:", error.message);
+        throw error;
+      }
+
+      if (data) {
+        return data.map(mapDbRecordToArtwork);
+      }
+    } catch (err) {
+      console.warn("Supabase fetch failed, checking localStorage fallback:", err);
+    }
+  }
+
+  const local = getStoredArtworks();
+  if (medium && medium !== "all") {
+    return local.filter((a) => a.medium === medium);
+  }
+  return local;
 }
 
 function getStoredArtworks(): Artwork[] {
@@ -132,15 +189,15 @@ function getStoredArtworks(): Artwork[] {
   }
 }
 
-export async function createArtwork(formData: FormData, token: string): Promise<Artwork> {
+export async function createArtwork(formData: FormData, _token: string): Promise<Artwork> {
   const artData = {
-    title: String(formData.get("title") ?? ""),
+    title: String(formData.get("title") ?? "").trim(),
     medium: String(formData.get("medium") ?? "") as Medium,
-    year: Number(formData.get("year") ?? 0),
-    dimensions: String(formData.get("dimensions") ?? ""),
+    year: Number(formData.get("year") ?? new Date().getFullYear()),
+    dimensions: String(formData.get("dimensions") ?? "").trim(),
     price: Number(formData.get("price") ?? 0),
-    description: String(formData.get("description") ?? ""),
-    image: "has-image",
+    description: String(formData.get("description") ?? "").trim(),
+    image: "",
   };
 
   const multiFiles = formData.getAll("images[]") as File[];
@@ -148,7 +205,7 @@ export async function createArtwork(formData: FormData, token: string): Promise<
   const imageFiles: File[] =
     multiFiles.length > 0
       ? multiFiles.filter((f) => f && f.size > 0)
-      : singleFile
+      : singleFile && singleFile.size > 0
         ? [singleFile]
         : [];
 
@@ -161,27 +218,10 @@ async function getArtworkByIdAsync(id: string): Promise<Artwork | null> {
       const { data, error } = await supabase.from("artworks").select("*").eq("id", id).single();
 
       if (!error && data) {
-        let parsedImages = [data.image];
-        if (data.image && data.image.startsWith("[")) {
-          try {
-            parsedImages = JSON.parse(data.image);
-          } catch (e) {}
-        }
-        return {
-          id: String(data.id),
-          title: data.title,
-          medium: data.medium as Medium,
-          year: Number(data.year),
-          dimensions: data.dimensions,
-          price: Number(data.price),
-          image: parsedImages[0] || data.image,
-          images: parsedImages,
-          description: data.description,
-          created_at: data.created_at,
-        };
+        return mapDbRecordToArtwork(data);
       }
     } catch (err) {
-      console.warn("Supabase fetch artwork by ID failed, falling back to local dataset:", err);
+      console.warn("Supabase fetch artwork by ID failed:", err);
     }
   }
 
@@ -204,37 +244,42 @@ async function saveArtworkCloud(
   },
   imageFiles?: File[] | null,
 ): Promise<Artwork> {
-  let imageUrls =
-    artData.images && artData.images.length > 0 ? artData.images : [artData.image].filter(Boolean);
+  let uploadedPaths: string[] = [];
+  let publicUrls: string[] = [];
 
   if (isCloudConfigured && supabase && imageFiles && imageFiles.length > 0) {
-    try {
-      const uploadedUrls: string[] = [];
-      for (const imageFile of imageFiles) {
-        const fileExt = imageFile.name.split(".").pop() || "jpg";
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-        const filePath = `artworks/${fileName}`;
+    for (const imageFile of imageFiles) {
+      const safeName = imageFile.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+      const fileExt = safeName.split(".").pop() || "jpg";
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("artworks")
-          .upload(filePath, imageFile, { upsert: true });
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("artworks")
+        .upload(fileName, imageFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
 
-        if (!uploadError) {
-          const { data: publicUrlData } = supabase.storage.from("artworks").getPublicUrl(filePath);
-          if (publicUrlData?.publicUrl) {
-            uploadedUrls.push(publicUrlData.publicUrl);
-          }
-        } else {
-          console.warn("Storage upload warning:", uploadError.message);
+      if (uploadError) {
+        console.error("Storage upload failed for file:", imageFile.name, uploadError.message);
+        // Clean up any previously uploaded files for this batch
+        if (uploadedPaths.length > 0) {
+          await supabase.storage.from("artworks").remove(uploadedPaths);
+        }
+        throw new Error(`Image upload failed: ${uploadError.message}`);
+      }
+
+      if (uploadData?.path) {
+        uploadedPaths.push(uploadData.path);
+        const { data: publicUrlData } = supabase.storage.from("artworks").getPublicUrl(uploadData.path);
+        if (publicUrlData?.publicUrl) {
+          publicUrls.push(publicUrlData.publicUrl);
         }
       }
-      if (uploadedUrls.length > 0) {
-        imageUrls = uploadedUrls;
-      }
-    } catch (err) {
-      console.warn("Storage upload failed, falling back:", err);
     }
   }
+
+  const finalImages = publicUrls.length > 0 ? publicUrls : artData.images || [artData.image].filter(Boolean);
 
   if (isCloudConfigured && supabase) {
     try {
@@ -244,44 +289,44 @@ async function saveArtworkCloud(
         year: artData.year,
         dimensions: artData.dimensions,
         price: artData.price,
-        image: JSON.stringify(imageUrls),
+        image: JSON.stringify(finalImages),
         description: artData.description,
       };
 
       const { data, error } = await supabase.from("artworks").insert([payload]).select().single();
 
-      if (!error && data) {
-        const createdCloudArt: Artwork = {
-          id: String(data.id),
-          title: data.title,
-          medium: data.medium as Medium,
-          year: Number(data.year),
-          dimensions: data.dimensions,
-          price: Number(data.price),
-          image: imageUrls[0] || "",
-          images: imageUrls,
-          description: data.description,
-          created_at: data.created_at,
-        };
+      if (error) {
+        console.error("Supabase DB Insert Error:", error.message);
+        // Orphan cleanup
+        if (uploadedPaths.length > 0) {
+          await supabase.storage.from("artworks").remove(uploadedPaths);
+        }
+        throw new Error(`Database save failed: ${error.message}`);
+      }
+
+      if (data) {
+        const createdCloudArt = mapDbRecordToArtwork(data);
         const currentLocal = getStoredArtworks();
         localStorage.setItem(
           ARTWORKS_STORAGE_KEY,
           JSON.stringify([createdCloudArt, ...currentLocal]),
         );
         return createdCloudArt;
-      } else if (error) {
-        console.error("Supabase DB Insert Error:", error.message);
       }
-    } catch (err) {
-      console.error("Cloud save failed:", err);
+    } catch (err: any) {
+      if (uploadedPaths.length > 0) {
+        await supabase.storage.from("artworks").remove(uploadedPaths);
+      }
+      throw err;
     }
   }
 
+  // Local fallback if Supabase is not configured
   const current = getStoredArtworks();
   const newArtwork: Artwork = {
     ...artData,
-    image: imageUrls[0] || "",
-    images: imageUrls,
+    image: finalImages[0] || "",
+    images: finalImages,
     id: `art_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
   };
   const updated = [newArtwork, ...current];
@@ -300,7 +345,7 @@ export async function deleteArtworkCloud(id: string): Promise<void> {
   deleteArtwork(id);
 }
 
-export function deleteArtwork(id: string, token?: string): void {
+export function deleteArtwork(id: string, _token?: string): void {
   const current = getStoredArtworks();
   const updated = current.filter((a) => a.id !== id);
   localStorage.setItem(ARTWORKS_STORAGE_KEY, JSON.stringify(updated));
@@ -312,3 +357,4 @@ export function resetArtworksToDefault(): void {
 
 export const fetchArtworks = getArtworksAsync;
 export const fetchArtworkById = getArtworkByIdAsync;
+
